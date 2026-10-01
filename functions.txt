@@ -1,0 +1,31 @@
+free <- pointer to head of free list
+
+FREE(a)
+	NEXT(a) <- free
+	free <- a
+
+SWEEP()
+	a <- start of the heap
+	while a < end of the heap
+		n <- SIZE(a)
+
+		if a is allocated
+			if a is marked
+				remove the mark
+			else
+				FREE(a)
+
+		a <- a + n
+
+ALLOCATE(o)
+
+NEW(o)
+	if IS_EMPTY()
+		MARK()
+		SWEEP()
+		if IS_EMPTY()
+			NEW <- nil
+		else
+			NEW <- ALLOCATE(o)
+	else
+		NEW <- ALLOCATE(o)
