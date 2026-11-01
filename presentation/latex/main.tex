@@ -130,9 +130,88 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Tracing Garbage Collection}
-	\placeholder{The three jobs of a tracing collector: allocation, identification of live objects (transitive closure from roots), reclamation of free memory. The paper only considers tracing collectors: reference counting is left out because it cannot reclaim cycles.}
+	\begin{columns}[c]
+		\begin{column}{0.52\textwidth}
+			A tracing collector has three jobs:
 
-	\diagramplaceholder{object graph with roots; reachable objects marked live, unreachable ones garbage}
+			\begin{itemize}
+				\item \textbf{Allocation} of new objects.
+				\item \textbf{Identification}: mark every object reachable from the roots.
+				\item \textbf{Reclamation} of unmarked objects.
+			\end{itemize}
+
+			\medskip
+			An object is \texttt{garbage} if we can't reach it from roots.
+		\end{column}
+
+		\begin{column}{0.44\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					font=\small,
+					obj/.style={circle, draw=themeText, minimum size=0.7cm, inner sep=0pt},
+					live/.style={obj, fill=themeExample!35},
+					dead/.style={obj, fill=themeTrack, dashed},
+					ref/.style={->, draw=themeText}
+				]
+				\node[draw=themeText, rounded corners=2pt, fill=themeAccent!20, minimum width=2.6cm, minimum height=0.6cm] (roots) at (1.25, 0) {Roots};
+
+				\node[live] (a) at (0.25, -1.3) {A};
+				\node[live] (b) at (2.25, -1.3) {B};
+				\node[live] (c) at (-0.4, -2.6) {C};
+				\node[live] (d) at (1.25, -2.6) {D};
+				\node[dead] (g) at (2.6, -3.7) {G};
+
+				\draw[ref] (roots) -- (a);
+				\draw[ref] (roots) -- (b);
+				\draw[ref] (a) -- (c);
+				\draw[ref] (a) -- (d);
+				\draw[ref] (b) -- (d);
+				\draw[ref] (g) -- (d);
+
+				\node[live, minimum size=0.35cm, label={[font=\scriptsize]right:live}] at (-0.4, -4.5) {};
+				\node[dead, minimum size=0.35cm, label={[font=\scriptsize]right:garbage}] at (1.4, -4.5) {};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{The Canonical Tracing Collectors}
+	The paper compares immix against the three canonical tracing collectors:
+
+	\begin{itemize}
+		\item \textbf{Mark-sweep (MS):} non-moving, objects stay where they were allocated.
+		\item \textbf{Semi-space (SS):} moving, copies live objects into a second space.
+		\item \textbf{Mark-compact (MC):} moving, slides live objects together within the same space.
+	\end{itemize}
+
+	\begin{exampleblock}{Building blocks}
+		\vspace{0.1em}
+		More sophisticated collectors, such as generational ones, are built by combining these.
+	\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Comparing the Canonical Collectors}
+	\footnotesize
+	\centering
+	\begin{tabular}{@{}llll@{}}
+		\toprule
+		                        & \parbox[t]{3.3cm}{\centering \textbf{Mark-sweep}}                            & \parbox[t]{3.3cm}{\centering \textbf{Semi-space}}                           & \parbox[t]{3.3cm}{\centering \textbf{Mark-compact}}                               \\
+		\midrule
+		\textbf{Identification} & \multicolumn{3}{c}{trace and mark live objects}                                                                                                                                                                                                \\
+		\midrule
+		\textbf{Reclamation}    & \parbox[t]{3.3cm}{\centering \textbf{sweep} dead objects onto the free list} & \parbox[t]{3.3cm}{\centering \textbf{evacuate} live objects to a new space} & \parbox[t]{3.3cm}{\centering \textbf{compact} live objects within the same space} \\
+		\midrule
+		\textbf{Allocation}     & \parbox[t]{3.3cm}{\centering free list}                                      & \parbox[t]{3.3cm}{\centering contiguous}                                    & \parbox[t]{3.3cm}{\centering contiguous}                                          \\
+		\bottomrule
+	\end{tabular}
+
+	\medskip
+	\raggedright
+	\normalsize
+	\begin{exampleblock}{Reclamation dictates allocation}
+		\vspace{0.1em}
+		Identification is identical. The collectors differ in \textbf{reclamation}, and each reclamation strategy determines how memory can be allocated.
+	\end{exampleblock}
 \end{frame}
 
 \begin{frame}{Three Reclamation Strategies}
