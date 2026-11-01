@@ -60,6 +60,22 @@
   \endgroup
 }
 
+\newcommand{\placeholder}[1]{%
+  \textcolor{themeAlert}{\emph{TODO: #1}}%
+}
+
+\newcommand{\placeholderbox}[1]{%
+  \begin{center}
+    \begin{tikzpicture}
+      \node[draw=themeAlert, dashed, rounded corners=2pt, minimum width=0.8\textwidth, minimum height=3.5cm, align=center, text width=0.7\textwidth, text=themeAlert]
+        {\emph{#1}};
+    \end{tikzpicture}
+  \end{center}
+}
+
+\newcommand{\diagramplaceholder}[1]{\placeholderbox{TikZ diagram: #1}}
+\newcommand{\paperplaceholder}[1]{\placeholderbox{Copy from the paper: #1}}
+
 \title{Immix: A Mark-Region Garbage Collector with
 Space Efficiency, Fast Collection, and Mutator Performance}
 \subtitle{Stephen M. Blackburn, Kathryn S. McKinley}
@@ -74,7 +90,214 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 
 \maketitle
 
-\begin{frame}
+\section{Garbage Collection Background}
+
+\begin{frame}{Why Garbage Collection Matters}
+    \placeholder{Managed languages (Java, C\#) allocate many small, short-to-medium lived objects, so the collector directly determines program performance.}
+\end{frame}
+
+\begin{frame}{Tracing Garbage Collection}
+    \placeholder{The three jobs of a tracing collector: allocation, identification of live objects (transitive closure from roots), reclamation of free memory.}
+
+    \diagramplaceholder{object graph with roots; reachable objects marked live, unreachable ones garbage}
+\end{frame}
+
+\begin{frame}{Three Reclamation Strategies}
+    \placeholder{Sweep-to-free-list (mark-sweep), evacuation (semi-space), compaction (mark-compact). Reclamation strategy dictates allocation strategy.}
+
+    \diagramplaceholder{the same fragmented heap after each strategy: free list holes, live objects copied to a to-space, live objects slid to one end}
+\end{frame}
+
+\begin{frame}{Three Performance Objectives}
+    \placeholder{Space efficiency, fast collection, mutator performance. Each canonical collector achieves only two of the three.}
+
+    \diagramplaceholder{triangle of the three objectives, with MS, SS, MC placed on the edge of the two objectives each one achieves}
+\end{frame}
+
+\begin{frame}{Locality and Contiguous Allocation}
+    \placeholder{Bump-pointer allocation places contemporaneously allocated objects next to each other, giving better cache locality than a free list.}
+
+    \diagramplaceholder{bump-pointer allocation (cursor moving right in a contiguous region) vs free-list allocation (objects scattered into holes)}
+\end{frame}
+
+\begin{frame}{The Space-Time Trade-off}
+    \placeholder{Explain the crossing lines: MS wins in small heaps, SS wins in large heaps thanks to 10\% better mutator time, MC is uncompetitive.}
+
+    \paperplaceholder{Figure 1 (performance trade-offs of MS, SS, MC)}
+\end{frame}
+
+\begin{frame}{Related Work}
+    \placeholder{Earlier mark-region collectors (JRockit, IBM thread-local heaps), Metronome's on-demand defragmentation, Garbage-First, generational collectors.}
+\end{frame}
+
+\section{Mark-Region Collection}
+
+\begin{frame}{Mark-Region Collectors}
+    \placeholder{Sweep-to-region: memory is split into regions, a region with any live object is unavailable, the rest are bump allocated into.}
+
+    \diagramplaceholder{naive mark-region heap: fixed regions, each either free or unavailable because it holds a live object}
+\end{frame}
+
+\begin{frame}{Two Open Questions}
+    \placeholder{(1) How big should regions be? Large regions waste space, small ones slow collection. (2) How to defragment, since one live object pins a whole region?}
+\end{frame}
+
+\begin{frame}{Blocks and Lines}
+    \placeholder{Immix manages memory at two granularities: coarse 32KB blocks and fine 128B lines. Objects may span lines but not blocks.}
+
+    \diagramplaceholder{heap $\to$ 32KB blocks $\to$ 256 lines of 128B each, with small objects inside lines}
+\end{frame}
+
+\begin{frame}{Initial Allocation}
+    \placeholder{All blocks start empty. A thread-local allocator takes an empty block from the global allocator and bump allocates into it until the heap is exhausted, which triggers a collection.}
+
+    \diagramplaceholder{global free block pool handing empty blocks to a thread-local allocator, which fills each block with a bump pointer}
+\end{frame}
+
+\begin{frame}{Identification and Reclamation}
+    \placeholder{Tracing marks objects and their lines in a line map. A coarse-grained sweep classifies blocks as free, recyclable, or unavailable.}
+
+    \diagramplaceholder{line map of several blocks after marking, each block labelled free / recyclable / unavailable}
+\end{frame}
+
+\begin{frame}{Steady State Allocation}
+    \placeholder{Threads allocate into recycled blocks in address order: scan the line map for a hole, bump allocate into it, move to the next hole. Empty blocks are used only after all recyclable blocks.}
+
+    \diagramplaceholder{recycled block with marked and free lines, cursor and limit pointing to the current hole, then jumping to the next hole}
+\end{frame}
+
+\begin{frame}{Immix Heap Organization}
+    \placeholder{Walk through the paper's figure: global free block allocator, recycled blocks, cursor and limit, line mark legend.}
+
+    \paperplaceholder{Figure 2 (immix heap organization)}
+\end{frame}
+
+\begin{frame}{Recycling and Allocation Policies}
+    \placeholder{A block with at least $F = 1$ free line is recyclable. Recyclable blocks are used in address order, free blocks last because the large object space also needs them.}
+\end{frame}
+
+\begin{frame}{Parallelism}
+    \placeholder{Synchronized global block allocator, unsynchronized thread-local allocators. Racy marking is safe; line marks are bytes to avoid synchronization.}
+\end{frame}
+
+\begin{frame}{Demand-Driven Overflow Allocation}
+    \placeholder{Medium objects (larger than a line) that do not fit the current hole go to a separate overflow allocator using empty blocks, so small holes are not skipped.}
+
+    \diagramplaceholder{medium object too large for the current hole, redirected to an empty overflow block instead of skipping the hole}
+\end{frame}
+
+\section{Opportunistic Defragmentation}
+
+\begin{frame}{Why Defragment?}
+    \placeholder{A pure mark-region collector never moves objects, so fragmented blocks stay partially used forever.}
+\end{frame}
+
+\begin{frame}{Opportunistic Evacuation}
+    \placeholder{Before collection, choose candidate blocks to evacuate and target space. During marking, move objects off candidates and leave forwarding pointers; stop moving when space runs out. 2.5\% of the heap is reserved as evacuation headroom.}
+
+    \diagramplaceholder{fragmented candidate block, live objects copied into holes of a target block, forwarding pointers left behind}
+\end{frame}
+
+\begin{frame}{Candidate Selection}
+    \placeholder{Defragment on demand. Mark and available histograms indexed by hole count; select the most fragmented blocks that fit the available space.}
+
+    \diagramplaceholder{mark and available histograms by hole count, with a cut-off line where required space exceeds available space}
+\end{frame}
+
+\begin{frame}{Mixing Marking and Evacuation}
+    \placeholder{Per-object decision during the trace: unmarked and unmovable $\to$ mark; unmarked and movable $\to$ evacuate and forward; forwarded $\to$ update reference. Single pass.}
+
+    \diagramplaceholder{flowchart of the per-object decision during tracing}
+\end{frame}
+
+\begin{frame}{Parallel Evacuation and Pinning}
+    \placeholder{Compare-and-swap to race on forwarding, paid only in the specialized defragmenting trace. Pinned objects are simply marked in place.}
+\end{frame}
+
+\section{Implementation Details}
+
+\begin{frame}{Block and Line Size}
+    \placeholder{128B lines roughly match cache lines and fit 1--4 objects; 32KB blocks roughly match pages. Worst-case fragmentation bounds: about 25\% per block, 97\% per line in theory. Metadata is one byte per line and four per block: 0.8\% overhead.}
+\end{frame}
+
+\begin{frame}{Conservative Line Marking}
+    \placeholder{Most objects are under 128B and span at most two lines. Mark only the start line; the allocator skips the first line of each hole, which implicitly covers the second line. Medium objects are marked exactly.}
+
+    \diagramplaceholder{small object straddling two lines: only the first line is marked, the next line is treated as implicitly marked}
+\end{frame}
+
+\begin{frame}{Optimizing Hot Paths}
+    \placeholder{The allocator matches semi-space speed and tracing comes close to mark-sweep. Lines are marked when an object is scanned, not when it is marked, which hides the cost.}
+\end{frame}
+
+\section{Evaluation}
+
+\begin{frame}{Methodology}
+    \placeholder{20 DaCapo, SPECjvm98 and pjbb2000 benchmarks; Jikes RVM with MMTk; Core 2 Duo, AMD Athlon, PowerPC 970; replay compilation; heaps from 1$\times$ to 6$\times$ the minimum.}
+\end{frame}
+
+\begin{frame}{Full Heap Performance}
+    \placeholder{Immix beats all canonical collectors at every heap size on all three architectures, matching SS mutator time and MS collection time.}
+
+    \paperplaceholder{Figure 3 (full heap performance comparison)}
+\end{frame}
+
+\begin{frame}{Full Heap Results at 2$\times$ Minimum Heap}
+    \placeholder{Per-benchmark slice: immix geomean 0.93 vs MS, worst case 1.01, best 0.82 (jython).}
+
+    \paperplaceholder{Table 1 (full heap performance at 2$\times$ minimum heap)}
+\end{frame}
+
+\begin{frame}{Space Efficiency}
+    \placeholder{Minimum heap size relative to mark-sweep: immix 86\%, mark-compact 83\%, semi-space far larger.}
+
+    \paperplaceholder{Figure 5 (minimum heap sizes)}
+\end{frame}
+
+\begin{frame}{Immix in a Generational Collector}
+    \placeholder{Semi-space nursery with an immix mature space (G|SS-IX) vs the production collector G|SS-MS; slightly better on average, 5\% better on pjbb2000.}
+
+    \diagramplaceholder{generational heap: bump-allocated nursery, survivors promoted into the immix mature space}
+\end{frame}
+
+\begin{frame}{Generational Performance at 1.5$\times$ Minimum Heap}
+    \placeholder{Per-benchmark slice normalized to G|SS-MS: G|SS-IX geomean 0.99, in-place G|IX-IX 1.02, G|MS-MS 1.10.}
+
+    \paperplaceholder{Table 2 (generational performance at 1.5$\times$ minimum heap)}
+\end{frame}
+
+\begin{frame}{In-Place Generational: Sticky Mark Bits}
+    \placeholder{Mark bits stay set between collections, so a nursery collection only traces newly allocated objects without moving anything. A write barrier remembers modified old objects. Supports pinning, unlike a copying nursery.}
+
+    \diagramplaceholder{heap after a full collection with old objects marked; new unmarked objects allocated between them; a nursery collection traces only the unmarked ones}
+\end{frame}
+
+\begin{frame}{Generational Results}
+    \placeholder{Copying generational, in-place (sticky mark bits) generational, and all immix variants compared.}
+
+    \paperplaceholder{Figure 6 (generational collector performance)}
+\end{frame}
+
+\begin{frame}{Selected Benchmarks}
+    \placeholder{javac and luindex: full heap immix is the best collector. pjbb2000: immix variants beat the production collector.}
+
+    \paperplaceholder{Figure 4 (selected benchmarks)}
+\end{frame}
+
+\begin{frame}{What Makes Immix Work}
+    \placeholder{Ablation: block-only marking inflates marked space by 93\%, lines without defragmentation by 23\%. Defragmentation rarely triggers but frees 95\% of candidate space. Overflow allocation handles about 4\% of allocation.}
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}{Conclusion}
+    \placeholder{Mark-region is a new collector family; opportunistic defragmentation mixes copying and marking in one pass; immix achieves all three performance objectives.}
+\end{frame}
+
+\begin{frame}{References}
+    \begin{itemize}
+        \item Stephen M. Blackburn, Kathryn S. McKinley. \emph{Immix: A Mark-Region Garbage Collector with Space Efficiency, Fast Collection, and Mutator Performance}. PLDI, 2008.
+    \end{itemize}
 \end{frame}
 
 \end{document}
