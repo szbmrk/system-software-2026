@@ -1,14 +1,64 @@
-\documentclass[aspectratio=169,11pt]{beamer}
+\documentclass[aspectratio=169]{beamer}
 
 \usetheme{metropolis}
-\setmonofont{JetBrainsMono Nerd Font}
 \setsansfont{JetBrainsMono Nerd Font}
-\setbeamertemplate{navigation symbols}{}
+\setmonofont{JetBrainsMono Nerd Font}
+
+\definecolor{themeText}{HTML}{292C3C}
+\definecolor{themeAccent}{HTML}{465AB5}
+\definecolor{themeAlert}{HTML}{D20F39}
+\definecolor{themeExample}{HTML}{179299}
+\definecolor{themeTrack}{HTML}{CCD0DA}
+
+\let\originaltexttt\texttt
+\renewcommand{\texttt}[1]{%
+  \begingroup
+  \setlength{\fboxsep}{2pt}%
+  \colorbox{themeTrack!65}{%
+    \textcolor{themeText}{\originaltexttt{#1}}%
+  }%
+  \endgroup
+}
+
+\setbeamercolor{normal text}{fg=themeText,bg=white}
+\setbeamercolor{frametitle}{fg=white,bg=themeAccent}
+\setbeamercolor{alerted text}{fg=themeAlert}
+\setbeamercolor{example text}{fg=themeExample}
+\setbeamercolor{progress bar}{fg=themeAccent,bg=themeTrack}
+\setbeamercolor{title separator}{fg=themeAccent}
+\setbeamercolor{itemize item}{fg=themeAccent}
+\setbeamercolor{itemize subitem}{parent=itemize item}
+\setbeamercolor{itemize subsubitem}{parent=itemize item}
 
 \usepackage[english]{babel}
+
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing}
 \usepackage{booktabs}
+
+\lstset {
+     basicstyle=\small\ttfamily,
+     frame=single,
+     numbers=left,
+     numberstyle=\tiny,
+     numbersep=5pt,
+     tabsize=2,
+     showstringspaces=false,
+}
+
+\lstset{escapeinside={(*@}{@*)}}
+
+\newcommand{\codeerror}[1]{%
+  \begingroup
+  \setlength{\fboxsep}{0pt}%
+  \colorbox{themeAlert!12}{%
+    \hspace{3pt}\color{themeAlert}\ttfamily\strut\detokenize{#1}\hspace{3pt}%
+  }%
+  \endgroup
+}
 
 \title{Immix: A Mark-Region Garbage Collector with
 Space Efficiency, Fast Collection, and Mutator Performance}
@@ -17,6 +67,10 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \date{}
 
 \begin{document}
+
+% Metropolis theme reserves footer space but content can safely overflow there
+% This is set so we ignore unrelevant overflow warnings
+\vfuzz=30pt
 
 \maketitle
 
