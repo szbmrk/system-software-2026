@@ -105,30 +105,6 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Conflicting Demands}
-	Throughput and space efficiency pull the collector in opposite directions:
-
-	\medskip
-	\small
-	\begin{tabular}{@{}lll@{}}
-		\toprule
-		\textbf{Demand}  & \textbf{Requires}            & \textbf{Costs}            \\
-		\midrule
-		Throughput       & copying for cache locality   & \alert{2$\times$ space}   \\
-		                 & large heap, rare collections & \alert{memory}            \\
-		\midrule
-		Space efficiency & non-moving collection        & \alert{worse locality}    \\
-		                 & small heap                   & \alert{GC time dominates} \\
-		\bottomrule
-	\end{tabular}
-
-	\normalsize
-	\begin{exampleblock}{No single winner}
-		\vspace{0.1em}
-		Locality needs moving objects, which costs space. Saving space means not moving them, which loses locality.
-	\end{exampleblock}
-\end{frame}
-
 \begin{frame}{Tracing Garbage Collection}
 	\begin{columns}[c]
 		\begin{column}{0.52\textwidth}
@@ -147,11 +123,11 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 		\begin{column}{0.44\textwidth}
 			\centering
 			\begin{tikzpicture}[
-					font=\small,
-					obj/.style={circle, draw=themeText, minimum size=0.7cm, inner sep=0pt},
-					live/.style={obj, fill=themeExample!35},
-					dead/.style={obj, fill=themeTrack, dashed},
-					ref/.style={-{Stealth[length=2.5mm, width=2mm]}, draw=themeText}
+				font=\small,
+				obj/.style={circle, draw=themeText, minimum size=0.7cm, inner sep=0pt},
+				live/.style={obj, fill=themeExample!35},
+				dead/.style={obj, fill=themeTrack, dashed},
+				ref/.style={-{Stealth[length=2.5mm, width=2mm]}, draw=themeText}
 				]
 				\node[draw=themeText, rounded corners=2pt, fill=themeAccent!20, minimum width=2.6cm, minimum height=0.6cm] (roots) at (1.25, 0) {Roots};
 
