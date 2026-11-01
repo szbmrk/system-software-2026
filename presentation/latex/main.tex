@@ -141,7 +141,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 			\end{itemize}
 
 			\medskip
-			An object is \texttt{garbage} if we can't reach it from roots.
+			An object is \texttt{dead} if we can't reach it from roots.
 		\end{column}
 
 		\begin{column}{0.44\textwidth}
@@ -169,7 +169,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 				\draw[ref] (g) -- (d);
 
 				\node[live, minimum size=0.35cm, label={[font=\scriptsize]right:live}] at (-0.4, -4.5) {};
-				\node[dead, minimum size=0.35cm, label={[font=\scriptsize]right:garbage}] at (1.4, -4.5) {};
+				\node[dead, minimum size=0.35cm, label={[font=\scriptsize]right:dead}] at (1.4, -4.5) {};
 			\end{tikzpicture}
 		\end{column}
 	\end{columns}
@@ -190,34 +190,63 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{exampleblock}
 \end{frame}
 
-\begin{frame}{Comparing the Canonical Collectors}
-	\footnotesize
-	\centering
-	\begin{tabular}{@{}llll@{}}
-		\toprule
-		                        & \parbox[t]{3.3cm}{\centering \textbf{Mark-sweep}}                            & \parbox[t]{3.3cm}{\centering \textbf{Semi-space}}                           & \parbox[t]{3.3cm}{\centering \textbf{Mark-compact}}                               \\
-		\midrule
-		\textbf{Identification} & \multicolumn{3}{c}{trace and mark live objects}                                                                                                                                                                                                \\
-		\midrule
-		\textbf{Reclamation}    & \parbox[t]{3.3cm}{\centering \textbf{sweep} dead objects onto the free list} & \parbox[t]{3.3cm}{\centering \textbf{evacuate} live objects to a new space} & \parbox[t]{3.3cm}{\centering \textbf{compact} live objects within the same space} \\
-		\midrule
-		\textbf{Allocation}     & \parbox[t]{3.3cm}{\centering free list}                                      & \parbox[t]{3.3cm}{\centering contiguous}                                    & \parbox[t]{3.3cm}{\centering contiguous}                                          \\
-		\bottomrule
-	\end{tabular}
-
-	\medskip
-	\raggedright
-	\normalsize
-	\begin{exampleblock}{Reclamation dictates allocation}
-		\vspace{0.1em}
-		Identification is identical. The collectors differ in \textbf{reclamation}, and each reclamation strategy determines how memory can be allocated.
-	\end{exampleblock}
-\end{frame}
-
 \begin{frame}{Three Reclamation Strategies}
-	\placeholder{Sweep-to-free-list (mark-sweep), evacuation (semi-space), compaction (mark-compact). Reclamation strategy dictates allocation strategy.}
-
-	\diagramplaceholder{the same fragmented heap after each strategy: free list holes, live objects copied to a to-space, live objects slid to one end}
+	\centering
+	\begin{tikzpicture}[
+			font=\footnotesize,
+			heapcell/.style={draw=themeText, minimum height=0.5cm, inner sep=0pt},
+			live/.style={heapcell, fill=themeExample!35},
+			dead/.style={heapcell, fill=themeTrack, dashed},
+			free/.style={heapcell, fill=white},
+			note/.style={font=\scriptsize, text=themeText!80},
+			rowlabel/.style={anchor=west, align=left},
+			flist/.style={->, draw=themeAccent, thick},
+			copy/.style={->, draw=themeAccent, thick}
+		]
+		\node[live, minimum width=0.72cm, anchor=south west] at (4.50, 0.00) {A};
+		\node[dead, minimum width=0.36cm, anchor=south west] at (5.22, 0.00) {};
+		\node[live, minimum width=0.36cm, anchor=south west] at (5.58, 0.00) {B};
+		\node[dead, minimum width=0.72cm, anchor=south west] at (5.94, 0.00) {};
+		\node[live, minimum width=0.72cm, anchor=south west] at (6.66, 0.00) {C};
+		\node[dead, minimum width=0.36cm, anchor=south west] at (7.38, 0.00) {};
+		\node[live, minimum width=0.36cm, anchor=south west] at (7.74, 0.00) {D};
+		\node[dead, minimum width=0.36cm, anchor=south west] at (8.10, 0.00) {};
+		\node[live, minimum width=0.72cm, anchor=south west] at (4.50, -1.25) {A};
+		\node[free, minimum width=0.36cm, anchor=south west] at (5.22, -1.25) {};
+		\node[live, minimum width=0.36cm, anchor=south west] at (5.58, -1.25) {B};
+		\node[free, minimum width=0.72cm, anchor=south west] at (5.94, -1.25) {};
+		\node[live, minimum width=0.72cm, anchor=south west] at (6.66, -1.25) {C};
+		\node[free, minimum width=0.36cm, anchor=south west] at (7.38, -1.25) {};
+		\node[live, minimum width=0.36cm, anchor=south west] at (7.74, -1.25) {D};
+		\node[free, minimum width=0.36cm, anchor=south west] at (8.10, -1.25) {};
+		\draw[flist] (5.40, -0.75) to[bend left=50] (6.30, -0.75);
+		\draw[flist] (6.30, -0.75) to[bend left=50] (7.56, -0.75);
+		\draw[flist] (7.56, -0.75) to[bend left=50] (8.28, -0.75);
+		\node[note, anchor=west] at (8.59, -1.00) {free list};
+		\node[free, minimum width=3.96cm, anchor=south west] at (4.50, -2.50) {};
+		\node[note, anchor=north] at (6.48, -2.55) {old space: freed all at once};
+		\draw[copy] (8.51, -2.25) -- (9.13, -2.25);
+		\node[live, minimum width=0.72cm, anchor=south west] at (9.18, -2.50) {A};
+		\node[live, minimum width=0.36cm, anchor=south west] at (9.90, -2.50) {B};
+		\node[live, minimum width=0.72cm, anchor=south west] at (10.26, -2.50) {C};
+		\node[live, minimum width=0.36cm, anchor=south west] at (10.98, -2.50) {D};
+		\node[free, minimum width=1.80cm, anchor=south west] at (11.34, -2.50) {};
+		\node[note, anchor=north east] at (13.14, -2.55) {contiguous free space};
+		\node[note, anchor=south] at (11.16, -2.00) {new space};
+		\node[live, minimum width=0.72cm, anchor=south west] at (4.50, -3.75) {A};
+		\node[live, minimum width=0.36cm, anchor=south west] at (5.22, -3.75) {B};
+		\node[live, minimum width=0.72cm, anchor=south west] at (5.58, -3.75) {C};
+		\node[live, minimum width=0.36cm, anchor=south west] at (6.30, -3.75) {D};
+		\node[free, minimum width=1.80cm, anchor=south west] at (6.66, -3.75) {};
+		\node[note, anchor=north] at (7.56, -3.80) {contiguous free space};
+		\node[rowlabel] at (0.00, 0.25) {\textbf{After marking}\\{\scriptsize live and dead objects}};
+		\node[rowlabel] at (0.00, -1.00) {\textbf{Mark-sweep}\\{\scriptsize objects stay in place}};
+		\node[rowlabel] at (0.00, -2.25) {\textbf{Semi-space}\\{\scriptsize evacuate to a new space}};
+		\node[rowlabel] at (0.00, -3.50) {\textbf{Mark-compact}\\{\scriptsize slide to one end}};
+		\node[live, minimum width=0.4cm, label={[note]right:live}] at (4.70, -4.90) {};
+		\node[dead, minimum width=0.4cm, label={[note]right:dead}] at (6.20, -4.90) {};
+		\node[free, minimum width=0.4cm, label={[note]right:free}] at (7.70, -4.90) {};
+	\end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Three Performance Objectives}
