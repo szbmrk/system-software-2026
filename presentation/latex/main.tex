@@ -36,7 +36,7 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{tikz}
-\usetikzlibrary{decorations.pathreplacing, calc}
+\usetikzlibrary{decorations.pathreplacing, calc, arrows.meta}
 \usepackage{booktabs}
 
 \lstset {
@@ -151,7 +151,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 					obj/.style={circle, draw=themeText, minimum size=0.7cm, inner sep=0pt},
 					live/.style={obj, fill=themeExample!35},
 					dead/.style={obj, fill=themeTrack, dashed},
-					ref/.style={->, draw=themeText}
+					ref/.style={-{Stealth[length=2.5mm, width=2mm]}, draw=themeText}
 				]
 				\node[draw=themeText, rounded corners=2pt, fill=themeAccent!20, minimum width=2.6cm, minimum height=0.6cm] (roots) at (1.25, 0) {Roots};
 
