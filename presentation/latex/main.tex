@@ -36,7 +36,7 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{tikz}
-\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{decorations.pathreplacing, calc}
 \usepackage{booktabs}
 
 \lstset {
@@ -231,14 +231,12 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 		\node[live, minimum width=0.72cm, anchor=south west] at (10.26, -2.50) {C};
 		\node[live, minimum width=0.36cm, anchor=south west] at (10.98, -2.50) {D};
 		\node[free, minimum width=1.80cm, anchor=south west] at (11.34, -2.50) {};
-		\node[note, anchor=north east] at (13.14, -2.55) {contiguous free space};
 		\node[note, anchor=south] at (11.16, -2.00) {new space};
 		\node[live, minimum width=0.72cm, anchor=south west] at (4.50, -3.75) {A};
 		\node[live, minimum width=0.36cm, anchor=south west] at (5.22, -3.75) {B};
 		\node[live, minimum width=0.72cm, anchor=south west] at (5.58, -3.75) {C};
 		\node[live, minimum width=0.36cm, anchor=south west] at (6.30, -3.75) {D};
 		\node[free, minimum width=1.80cm, anchor=south west] at (6.66, -3.75) {};
-		\node[note, anchor=north] at (7.56, -3.80) {contiguous free space};
 		\node[rowlabel] at (0.00, 0.25) {\textbf{After marking}\\{\scriptsize live and dead objects}};
 		\node[rowlabel] at (0.00, -1.00) {\textbf{Mark-sweep}\\{\scriptsize objects stay in place}};
 		\node[rowlabel] at (0.00, -2.25) {\textbf{Semi-space}\\{\scriptsize evacuate to a new space}};
@@ -250,9 +248,43 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Three Performance Objectives}
-	\placeholder{Space efficiency, fast collection, mutator performance. Each canonical collector achieves only two of the three.}
+	\begin{columns}[c]
+		\begin{column}{0.48\textwidth}
+			\begin{itemize}
+				\item \textbf{Space efficiency:} needs only a small heap.
+				\item \textbf{Fast collection:} little time spent collecting.
+				\item \textbf{Mutator performance:} the application (\emph{mutator}) runs fast, thanks to locality.
+			\end{itemize}
 
-	\diagramplaceholder{triangle of the three objectives, with MS, SS, MC placed on the edge of the two objectives each one achieves}
+			\medskip
+			Each canonical collector achieves only \alert{two of the three}.
+		\end{column}
+
+		\begin{column}{0.5\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					font=\footnotesize,
+					goal/.style={draw=themeText, rounded corners=2pt, fill=themeAccent!20, align=center, inner sep=3pt},
+					side/.style={align=center}
+				]
+				\coordinate (top) at (0, 2.4);
+				\coordinate (left) at (-2.2, -1.2);
+				\coordinate (right) at (2.2, -1.2);
+
+				\draw[themeText, thick] (top) -- (left) -- (right) -- cycle;
+
+				\node[goal] at (top) {Fast\\collection};
+				\node[goal] at (left) {Space\\efficiency};
+				\node[goal] at (right) {Mutator\\performance};
+
+				\node[side, anchor=east] at ($(top)!0.5!(left) + (-0.15, 0)$) {\textbf{MS}\\{\scriptsize\color{themeAlert}no locality}};
+				\node[side, anchor=west] at ($(top)!0.5!(right) + (0.15, 0)$) {\textbf{SS}\\{\scriptsize\color{themeAlert}2$\times$ space}};
+				\node[side, anchor=north] at ($(left)!0.5!(right) + (0, -0.45)$) {\textbf{MC}\\{\scriptsize\color{themeAlert}multiple heap passes}};
+
+				\node[font=\small\bfseries, text=themeExample] at (0, 0.1) {immix?};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Locality and Contiguous Allocation}
