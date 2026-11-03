@@ -264,9 +264,47 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Locality and Contiguous Allocation}
-	\placeholder{Bump-pointer allocation places contemporaneously allocated objects next to each other, giving better cache locality than a free list.}
+	\begin{itemize}
+		\item \textbf{Contiguous allocation} puts objects allocated at the same time next to each other in space: good \textbf{mutator locality}.
+		\item \textbf{Mark-sweep} is non-moving and allocates from a free list: \alert{no locality} for objects allocated at the same time.
+	\end{itemize}
 
-	\diagramplaceholder{bump-pointer allocation (cursor moving right in a contiguous region) vs free-list allocation (objects scattered into holes)}
+	\centering
+	\begin{tikzpicture}[
+			font=\footnotesize,
+			heapcell/.style={draw=themeText, minimum height=0.5cm, inner sep=0pt},
+			live/.style={heapcell, fill=themeExample!35},
+			new/.style={heapcell, fill=themeAccent!35},
+			free/.style={heapcell, fill=white},
+			note/.style={font=\scriptsize, text=themeText!80},
+			rowlabel/.style={anchor=west, align=left}
+		]
+		\node[live, minimum width=0.80cm, anchor=south west] at (3.40, 0.00) {A};
+		\node[live, minimum width=0.40cm, anchor=south west] at (4.20, 0.00) {B};
+		\node[live, minimum width=0.80cm, anchor=south west] at (4.60, 0.00) {C};
+		\node[live, minimum width=0.40cm, anchor=south west] at (5.40, 0.00) {D};
+		\node[new, minimum width=0.40cm, anchor=south west] at (5.80, 0.00) {1};
+		\node[new, minimum width=0.40cm, anchor=south west] at (6.20, 0.00) {2};
+		\node[new, minimum width=0.40cm, anchor=south west] at (6.60, 0.00) {3};
+		\node[new, minimum width=0.40cm, anchor=south west] at (7.00, 0.00) {4};
+		\node[free, minimum width=0.40cm, anchor=south west] at (7.40, 0.00) {};
+		\draw[decorate, decoration={brace, amplitude=4pt}, themeAccent, thick] (5.80, 0.58) -- (7.40, 0.58) node[midway, above=4pt, note] {side by side};
+		\node[live, minimum width=0.80cm, anchor=south west] at (3.40, -1.30) {A};
+		\node[new, minimum width=0.40cm, anchor=south west] at (4.20, -1.30) {1};
+		\node[live, minimum width=0.40cm, anchor=south west] at (4.60, -1.30) {B};
+		\node[new, minimum width=0.40cm, anchor=south west] at (5.00, -1.30) {2};
+		\node[free, minimum width=0.40cm, anchor=south west] at (5.40, -1.30) {};
+		\node[live, minimum width=0.80cm, anchor=south west] at (5.80, -1.30) {C};
+		\node[new, minimum width=0.40cm, anchor=south west] at (6.60, -1.30) {3};
+		\node[live, minimum width=0.40cm, anchor=south west] at (7.00, -1.30) {D};
+		\node[new, minimum width=0.40cm, anchor=south west] at (7.40, -1.30) {4};
+		\node[note, anchor=north] at (5.60, -1.35) {scattered into free-list holes};
+		\node[rowlabel] at (0, 0.25) {\textbf{Contiguous}\\{\scriptsize SS, MC}};
+		\node[rowlabel] at (0, -1.05) {\textbf{Free list}\\{\scriptsize MS}};
+		\node[live, minimum width=0.4cm, label={[note]right:existing}] at (8.30, 0.25) {};
+		\node[new, minimum width=0.4cm, label={[note]right:allocated together}] at (8.30, -0.45) {};
+		\node[free, minimum width=0.4cm, label={[note]right:free}] at (8.30, -1.15) {};
+	\end{tikzpicture}
 \end{frame}
 
 \begin{frame}{The Space-Time Trade-off}
