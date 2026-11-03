@@ -308,9 +308,25 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{The Space-Time Trade-off}
-	\placeholder{Explain the crossing lines: MS wins in small heaps, SS wins in large heaps thanks to 10\% better mutator time, MC is uncompetitive.}
+	\begin{columns}[c]
+		\begin{column}{0.54\textwidth}
+			MS, SS and MC from 1$\times$ to 6$\times$ the minimum heap:
 
-	\paperplaceholder{Figure 1 (performance trade-offs of MS, SS, MC)}
+			\begin{itemize}
+				\item \textbf{Small heaps:} MS wins, collection cost dominates.
+				\item \textbf{Large heaps:} SS wins, 10\% better mutator time.
+				\item \textbf{MC:} \alert{collection too costly}.
+			\end{itemize}
+
+			\medskip
+			The crossing lines are the classic \textbf{space-time trade-off}.
+		\end{column}
+
+		\begin{column}{0.46\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{figures/fig1a.pdf}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Related Work}
