@@ -329,10 +329,6 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{columns}
 \end{frame}
 
-\begin{frame}{Related Work}
-	\placeholder{Earlier mark-region collectors (JRockit, IBM thread-local heaps), Metronome's on-demand defragmentation, Garbage-First, generational collectors.}
-\end{frame}
-
 \section{Mark-Region Collection}
 
 \begin{frame}{Mark-Region Collectors}
@@ -492,6 +488,24 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \section{Conclusion}
+
+\begin{frame}{Related Work}
+	\textbf{Mark-region collectors existed}, in JRockit and IBM's JVM, but were never described or evaluated in a publication.
+
+	\medskip
+	How immix differs:
+
+	\begin{itemize}
+		\item \textbf{Defragmentation:} JRockit and IBM use \alert{compaction}; immix evacuates opportunistically in a \textbf{single pass}.
+		\item \textbf{Granularity:} IBM never reuses gaps smaller than 512 bytes; immix reclaims \textbf{128-byte lines}.
+		\item \textbf{Metadata:} 0.8\% of the heap for immix vs 3.1\% for IBM.
+	\end{itemize}
+
+	\begin{exampleblock}{Closest relative}
+		\vspace{0.1em}
+		Metronome also defragments on demand, but needs exact fragmentation statistics from the previous collection.
+	\end{exampleblock}
+\end{frame}
 
 \begin{frame}{Conclusion}
 	\placeholder{Mark-region is a new collector family; opportunistic defragmentation mixes copying and marking in one pass; immix achieves all three performance objectives.}
