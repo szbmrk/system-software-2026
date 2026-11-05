@@ -332,9 +332,55 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \section{Mark-Region Collection}
 
 \begin{frame}{Mark-Region Collectors}
-	\placeholder{Sweep-to-region: memory is split into regions, a region with any live object is unavailable, the rest are bump allocated into.}
+	\begin{itemize}
+		\item Memory is divided into \textbf{fixed-size regions}. Objects can't span regions.
+		\item \textbf{Bump allocation:} each new object goes right after the previous one, by advancing (\emph{bumping}) a pointer. When no free region is left, we mark and sweep again.
+		\item \textbf{Sweep:} a region holding \alert{any} live object is \emph{unavailable}, all others are \emph{free}.
+	\end{itemize}
 
-	\diagramplaceholder{naive mark-region heap: fixed regions, each either free or unavailable because it holds a live object}
+	\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		heapcell/.style={draw=themeText, minimum height=0.5cm, minimum width=0.375cm, inner sep=0pt, anchor=south west},
+		live/.style={heapcell, fill=themeExample!35},
+		dead/.style={heapcell, fill=themeTrack, dashed},
+		free/.style={heapcell, fill=white},
+		new/.style={heapcell, fill=themeAccent!35},
+		region/.style={draw=themeText, very thick},
+		note/.style={font=\scriptsize, text=themeText!80},
+		rowlabel/.style={anchor=west, align=left},
+		bump/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAccent, thick}
+		]
+		\foreach \kinds [count=\r from 0] in {{live,dead,dead,dead}, {dead,dead,dead,dead}, {live,live,dead,live}, {dead,dead,dead,dead}, {dead,live,dead,dead}, {dead,dead,dead,dead}} {
+				\pgfmathsetmacro{\x}{4.4 + 1.6 * \r}
+				\foreach \kind [count=\c from 0] in \kinds {
+					\node[\kind] at (\x + 0.375 * \c, 0) {};
+				}
+				\draw[region] (\x, 0) rectangle ++(1.5, 0.5);
+			}
+
+		\foreach \kinds [count=\r from 0] in {{live,dead,dead,dead}, {new,new,free,free}, {live,live,dead,live}, {free,free,free,free}, {dead,live,dead,dead}, {free,free,free,free}} {
+				\pgfmathsetmacro{\x}{4.4 + 1.6 * \r}
+				\foreach \kind [count=\c from 0] in \kinds {
+					\node[\kind] at (\x + 0.375 * \c, -1.3) {};
+				}
+				\draw[region] (\x, -1.3) rectangle ++(1.5, 0.5);
+			}
+
+		\foreach \r/\status in {0/unavailable, 1/free, 2/unavailable, 3/free, 4/unavailable, 5/free} {
+				\node[note, anchor=north] at (5.15 + 1.6 * \r, -1.35) {\status};
+			}
+
+		\draw[bump] (6.75, -0.25) -- (6.75, -0.75);
+		\node[note, anchor=west, text=themeAccent] at (6.8, -0.5) {cursor: next object goes here};
+
+		\node[rowlabel] at (0, 0.25) {\textbf{After marking}\\{\scriptsize live and dead objects}};
+		\node[rowlabel] at (0, -1.05) {\textbf{After sweep}\\{\scriptsize whole regions reclaimed}};
+		\node[live, minimum width=0.5cm, label={[note]right:live}] at (4.6, -2.6) {};
+		\node[dead, minimum width=0.5cm, label={[note]right:dead}] at (6.2, -2.6) {};
+		\node[new, minimum width=0.5cm, label={[note]right:new}] at (7.8, -2.6) {};
+		\node[free, minimum width=0.5cm, label={[note]right:free}] at (9.4, -2.6) {};
+	\end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Two Open Questions}
