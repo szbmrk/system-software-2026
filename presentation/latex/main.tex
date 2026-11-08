@@ -1040,46 +1040,16 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\includegraphics[width=0.32\linewidth]{figures/fig3f.png}
 \end{frame}
 
-\begin{frame}{Full Heap Results at 2$\times$ Minimum Heap}
-	\placeholder{Per-benchmark slice: immix geomean 0.93 vs MS, worst case 1.01, best 0.82 (jython).}
-
-	\paperplaceholder{Table 1 (full heap performance at 2$\times$ minimum heap)}
-\end{frame}
-
 \begin{frame}{Space Efficiency}
-	\placeholder{Minimum heap size relative to mark-sweep: immix 86\%, mark-compact 83\%, semi-space far larger.}
+	\begin{itemize}
+		\item Measured as the \textbf{smallest heap} each collector can run in, relative to MS. \textbf{Lower is better.}
+		\item On average (rightmost group), IX needs \textbf{86\%} of MS's heap, close to MC with \textbf{83\%}.
+		\item SS needs the most, because of its copy reserve.
+	\end{itemize}
 
-	\paperplaceholder{Figure 5 (minimum heap sizes)}
-\end{frame}
-
-\begin{frame}{Immix in a Generational Collector}
-	\placeholder{Semi-space nursery with an immix mature space (G|SS-IX) vs the production collector G|SS-MS; slightly better on average, 5\% better on pjbb2000.}
-
-	\diagramplaceholder{generational heap: bump-allocated nursery, survivors promoted into the immix mature space}
-\end{frame}
-
-\begin{frame}{Generational Performance at 1.5$\times$ Minimum Heap}
-	\placeholder{Per-benchmark slice normalized to G|SS-MS: G|SS-IX geomean 0.99, in-place G|IX-IX 1.02, G|MS-MS 1.10.}
-
-	\paperplaceholder{Table 2 (generational performance at 1.5$\times$ minimum heap)}
-\end{frame}
-
-\begin{frame}{In-Place Generational: Sticky Mark Bits}
-	\placeholder{Mark bits stay set between collections, so a nursery collection only traces newly allocated objects without moving anything. A write barrier remembers modified old objects. Supports pinning, unlike a copying nursery.}
-
-	\diagramplaceholder{heap after a full collection with old objects marked; new unmarked objects allocated between them; a nursery collection traces only the unmarked ones}
-\end{frame}
-
-\begin{frame}{Generational Results}
-	\placeholder{Copying generational, in-place (sticky mark bits) generational, and all immix variants compared.}
-
-	\paperplaceholder{Figure 6 (generational collector performance)}
-\end{frame}
-
-\begin{frame}{Selected Benchmarks}
-	\placeholder{javac and luindex: full heap immix is the best collector. pjbb2000: immix variants beat the production collector.}
-
-	\paperplaceholder{Figure 4 (selected benchmarks)}
+	\medskip
+	\centering
+	\includegraphics[width=\linewidth]{figures/fig5.png}
 \end{frame}
 
 \begin{frame}{What Makes Immix Work}
