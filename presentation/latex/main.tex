@@ -672,16 +672,68 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{enumerate}
 \end{frame}
 
+\begin{frame}{Steady State Allocation}
+	\begin{itemize}
+		\item Allocate into \textbf{recycled blocks} first, in address order. Empty blocks come last.
+		\item Scan the line map for a \textbf{hole} (one or more free lines in a row) and bump allocate into it.
+		\item \textbf{Limit:} the next marked line or the block's end. Past it: find the next hole, or take a new block.
+	\end{itemize}
+
+	\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		block/.style={draw=themeText, very thick},
+		lineSep/.style={draw=themeText!40},
+		live/.style={fill=themeExample!60},
+		new/.style={draw=themeText, fill=themeAccent!35},
+		marked/.style={draw=themeText, fill=themeText!70},
+		unmarked/.style={draw=themeText, fill=white},
+		cursor/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAccent, thick},
+		limit/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAlert, thick},
+		note/.style={font=\scriptsize, text=themeText!80},
+		rowlabel/.style={anchor=west, align=left}
+		]
+		\fill[live] (3.50, 0.1) rectangle (4.90, 0.4);
+		\fill[live] (7.50, 0.1) rectangle (8.00, 0.4);
+		\draw[new] (5.00, 0.1) rectangle (5.70, 0.4);
+		\draw[new] (5.70, 0.1) rectangle (6.30, 0.4);
+		\draw[lineSep] (4.20, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.00, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.80, 0) -- ++(0, 0.5);
+		\draw[lineSep] (6.60, 0) -- ++(0, 0.5);
+		\draw[lineSep] (7.40, 0) -- ++(0, 0.5);
+		\draw[lineSep] (8.20, 0) -- ++(0, 0.5);
+		\draw[lineSep] (9.00, 0) -- ++(0, 0.5);
+		\draw[block] (3.4, 0) rectangle ++(6.40, 0.5);
+		\draw[marked] (3.40, -0.55) rectangle ++(0.80, 0.3);
+		\draw[marked] (4.20, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (5.00, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (5.80, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (6.60, -0.55) rectangle ++(0.80, 0.3);
+		\draw[marked] (7.40, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (8.20, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (9.00, -0.55) rectangle ++(0.80, 0.3);
+		\draw[cursor] (6.30, 0.95) -- (6.30, 0.55);
+		\node[note, anchor=south east, text=themeAccent] at (6.30, 0.95) {cursor};
+		\draw[limit] (7.40, 0.95) -- (7.40, 0.55);
+		\node[note, anchor=south west, text=themeAlert] at (7.40, 0.95) {limit};
+		\draw[decorate, decoration={brace, amplitude=4pt, mirror}, themeAccent, thick] (5.04, -0.62) -- (7.36, -0.62) node[midway, below=4pt, note] {current hole};
+		\draw[decorate, decoration={brace, amplitude=4pt, mirror}, themeAccent, thick] (8.24, -0.62) -- (9.76, -0.62) node[midway, below=4pt, note] {next hole};
+		\node[rowlabel] at (0, 0.25) {\textbf{Recycled block}};
+		\node[rowlabel] at (0, -0.4) {\textbf{Line map}};
+		\fill[live] (3.40, -1.75) rectangle ++(0.4, 0.25);
+		\node[note, anchor=west] at (3.85, -1.625) {old live object};
+		\draw[new] (6.90, -1.75) rectangle ++(0.4, 0.25);
+		\node[note, anchor=west] at (7.35, -1.625) {new object};
+		\draw[marked] (9.80, -1.75) rectangle ++(0.25, 0.25);
+		\node[note, anchor=west] at (10.25, -1.625) {marked line};
+	\end{tikzpicture}
+\end{frame}
+
 \begin{frame}{Conservative Line Marking}
 	\placeholder{Most objects are under 128B and span at most two lines. Mark only the start line; the allocator skips the first line of each hole, which implicitly covers the second line. Medium objects are marked exactly.}
 
 	\diagramplaceholder{small object straddling two lines: only the first line is marked, the next line is treated as implicitly marked}
-\end{frame}
-
-\begin{frame}{Steady State Allocation}
-	\placeholder{Threads allocate into recycled blocks in address order: scan the line map for a hole, bump allocate into it, move to the next hole. Empty blocks are used only after all recyclable blocks.}
-
-	\diagramplaceholder{recycled block with marked and free lines, cursor and limit pointing to the current hole, then jumping to the next hole}
 \end{frame}
 
 \begin{frame}{Immix Heap Organization}
