@@ -313,9 +313,9 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 			MS, SS and MC from 1$\times$ to 6$\times$ the minimum heap:
 
 			\begin{itemize}
-				\item \textbf{Small heaps:} MS wins, collection cost dominates.
-				\item \textbf{Large heaps:} SS wins, 10\% better mutator time.
-				\item \textbf{MC:} \alert{collection too costly}.
+				\item \textbf{Small heap:} GC runs often, fast collection wins (\textbf{MS}).
+				\item \textbf{Large heap:} GC runs rarely, fast program wins (\textbf{SS}).
+				\item \textbf{MC:} \alert{collecting is too slow}.
 			\end{itemize}
 
 			\medskip
@@ -324,7 +324,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 
 		\begin{column}{0.46\textwidth}
 			\centering
-			\includegraphics[width=\linewidth]{figures/fig1a.pdf}
+			\includegraphics[width=\linewidth]{figures/fig1a.png}
 		\end{column}
 	\end{columns}
 \end{frame}
@@ -384,7 +384,87 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Two Open Questions}
-	\placeholder{(1) How big should regions be? Large regions waste space, small ones slow collection. (2) How to defragment, since one live object pins a whole region?}
+	\begin{columns}[c]
+		\begin{column}{0.5\textwidth}
+			\textbf{1. How big should regions be?}
+			\begin{itemize}
+				\item \textbf{Large:} one small object \alert{wastes} a whole region.
+				\item \textbf{Small:} less waste, but \alert{slower collection}.
+			\end{itemize}
+
+			\medskip
+			\textbf{2. How to defragment?}
+			\begin{itemize}
+				\item A region with \textbf{any} live object stays unavailable.
+			\end{itemize}
+		\end{column}
+
+		\begin{column}{0.48\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					heapcell/.style={draw=themeText!60, minimum height=0.5cm, minimum width=0.34cm, inner sep=0pt, anchor=south west},
+					live/.style={heapcell, fill=themeExample!35},
+					dead/.style={heapcell, fill=themeTrack},
+					free/.style={heapcell, fill=white},
+					region/.style={draw=themeText, very thick},
+					unavail/.style={draw=themeAlert, very thick},
+					note/.style={font=\scriptsize, text=themeText!80}
+				]
+				\node[dead] at (0.00, 0) {};
+				\node[live] at (0.34, 0) {};
+				\node[dead] at (0.68, 0) {};
+				\node[dead] at (1.02, 0) {};
+				\node[dead] at (1.36, 0) {};
+				\node[dead] at (1.70, 0) {};
+				\node[dead] at (2.04, 0) {};
+				\node[dead] at (2.38, 0) {};
+				\draw[unavail] (0.00, 0) rectangle ++(2.72, 0.5);
+				\node[dead] at (2.86, 0) {};
+				\node[dead] at (3.20, 0) {};
+				\node[dead] at (3.54, 0) {};
+				\node[live] at (3.88, 0) {};
+				\node[dead] at (4.22, 0) {};
+				\node[dead] at (4.56, 0) {};
+				\node[dead] at (4.90, 0) {};
+				\node[dead] at (5.24, 0) {};
+				\draw[unavail] (2.86, 0) rectangle ++(2.72, 0.5);
+				\node[note, anchor=south west] at (0, 0.55) {\textbf{2 large regions}};
+				\node[note, anchor=north west] at (0, -0.05) {\alert{both unavailable: 14 cells wasted}};
+				\node[dead] at (0.00, -1.9) {};
+				\node[live] at (0.34, -1.9) {};
+				\draw[unavail] (0.00, -1.9) rectangle ++(0.68, 0.5);
+				\node[free] at (0.82, -1.9) {};
+				\node[free] at (1.16, -1.9) {};
+				\draw[region] (0.82, -1.9) rectangle ++(0.68, 0.5);
+				\node[free] at (1.64, -1.9) {};
+				\node[free] at (1.98, -1.9) {};
+				\draw[region] (1.64, -1.9) rectangle ++(0.68, 0.5);
+				\node[free] at (2.46, -1.9) {};
+				\node[free] at (2.80, -1.9) {};
+				\draw[region] (2.46, -1.9) rectangle ++(0.68, 0.5);
+				\node[free] at (3.28, -1.9) {};
+				\node[free] at (3.62, -1.9) {};
+				\draw[region] (3.28, -1.9) rectangle ++(0.68, 0.5);
+				\node[dead] at (4.10, -1.9) {};
+				\node[live] at (4.44, -1.9) {};
+				\draw[unavail] (4.10, -1.9) rectangle ++(0.68, 0.5);
+				\node[free] at (4.92, -1.9) {};
+				\node[free] at (5.26, -1.9) {};
+				\draw[region] (4.92, -1.9) rectangle ++(0.68, 0.5);
+				\node[free] at (5.74, -1.9) {};
+				\node[free] at (6.08, -1.9) {};
+				\draw[region] (5.74, -1.9) rectangle ++(0.68, 0.5);
+				\node[note, anchor=south west] at (0, -1.3499999999999999) {\textbf{8 small regions}};
+				\node[note, anchor=north west] at (0, -1.95) {\alert{2 unavailable: 2 cells wasted}};
+
+				\node[live, minimum width=0.4cm, label={[note]right:live}] at (0, -3.2) {};
+				\node[dead, minimum width=0.4cm, label={[note]right:wasted}] at (1.6, -3.2) {};
+				\node[free, minimum width=0.4cm, label={[note]right:free}] at (3.5, -3.2) {};
+				\draw[unavail] (0, -3.8) rectangle ++(0.4, 0.4);
+				\node[note, anchor=west] at (0.45, -3.6) {unavailable region};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Blocks and Lines}
