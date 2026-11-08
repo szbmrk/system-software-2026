@@ -60,22 +60,6 @@
   \endgroup
 }
 
-\newcommand{\placeholder}[1]{%
-  \textcolor{themeAlert}{\emph{TODO: #1}}%
-}
-
-\newcommand{\placeholderbox}[1]{%
-  \begin{center}
-    \begin{tikzpicture}
-      \node[draw=themeAlert, dashed, rounded corners=2pt, minimum width=0.8\textwidth, minimum height=3.5cm, align=center, text width=0.7\textwidth, text=themeAlert]
-        {\emph{#1}};
-    \end{tikzpicture}
-  \end{center}
-}
-
-\newcommand{\diagramplaceholder}[1]{\placeholderbox{TikZ diagram: #1}}
-\newcommand{\paperplaceholder}[1]{\placeholderbox{Copy from the paper: #1}}
-
 \title{Immix: A Mark-Region Garbage Collector with
 Space Efficiency, Fast Collection, and Mutator Performance}
 \subtitle{Stephen M. Blackburn, Kathryn S. McKinley}
@@ -1050,10 +1034,6 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\medskip
 	\centering
 	\includegraphics[width=\linewidth]{figures/fig5.png}
-\end{frame}
-
-\begin{frame}{What Makes Immix Work}
-	\placeholder{Ablation: block-only marking inflates marked space by 93\%, lines without defragmentation by 23\%. Defragmentation rarely triggers but frees 95\% of candidate space. Overflow allocation handles about 4\% of allocation.}
 \end{frame}
 
 \section{Conclusion}
