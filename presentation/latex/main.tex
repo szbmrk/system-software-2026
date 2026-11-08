@@ -92,19 +92,6 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 
 \section{Garbage Collection Background}
 
-\begin{frame}{Why Garbage Collection Matters}
-	\textbf{Managed languages} (Java, C\#) allocate many \textbf{small, short-lived} objects, so the garbage collector \textbf{directly determines} performance.
-
-	\medskip
-	Applications make conflicting demands:
-
-	\begin{itemize}
-		\item real-time: \textbf{pause-time guarantees}
-		\item embedded: \textbf{space efficiency}
-		\item servers: \textbf{throughput}
-	\end{itemize}
-\end{frame}
-
 \begin{frame}{Tracing Garbage Collection}
 	\begin{columns}[c]
 		\begin{column}{0.52\textwidth}
