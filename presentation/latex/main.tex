@@ -989,9 +989,29 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Candidate Selection}
-	\placeholder{Defragment on demand. Mark and available histograms indexed by hole count; select the most fragmented blocks that fit the available space.}
+	\begin{itemize}
+		\item \textbf{More holes = more fragmented}: picked first.
+		\item Walk from the most holes down: their \textbf{marked lines} add to the space \textbf{needed}, their \textbf{free lines} stop counting as \textbf{available}. Stop when \alert{needed $>$ available}.
+	\end{itemize}
 
-	\diagramplaceholder{mark and available histograms by hole count, with a cut-off line where required space exceeds available space}
+	\centering
+	\small
+	Each row adds up \textbf{all blocks} with that many holes:
+
+	\smallskip
+	\begin{tabular}{@{}lrrrrl@{}}
+		\toprule
+		\textbf{Group} & \textbf{Marked} & \textbf{Free} & \textbf{Needed} & \textbf{Available} &                                     \\
+		\midrule
+		start          &                 &               & 0               & 100                &                                     \\
+		6 holes        & 10              & 15            & 10              & 85                 & \textcolor{themeExample}{candidate} \\
+		5 holes        & 20              & 20            & 30              & 65                 & \textcolor{themeExample}{candidate} \\
+		4 holes        & 30              & 25            & 60              & 40                 & \alert{stop}                        \\
+		\bottomrule
+	\end{tabular}
+
+	\smallskip
+	$\to$ \textbf{all} blocks with 6 or 5 holes become candidates.
 \end{frame}
 
 \begin{frame}{Mixing Marking and Evacuation}
