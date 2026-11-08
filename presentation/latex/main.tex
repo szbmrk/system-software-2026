@@ -1036,6 +1036,31 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\includegraphics[width=\linewidth]{figures/fig5.png}
 \end{frame}
 
+\begin{frame}{Where the Space Goes}
+	\begin{columns}[T]
+		\begin{column}{0.48\textwidth}
+			\textcolor{themeExample}{\textbf{IX vs MS: less space}}
+
+			\small
+			\begin{itemize}
+				\item MS never moves objects: \alert{no defragmentation}, so fragmentation stays. This is the \textbf{main reason}.
+				\item IX packs objects of any size into holes, and \textbf{defragmentation} repairs fragmented blocks.
+			\end{itemize}
+		\end{column}
+
+		\begin{column}{0.48\textwidth}
+			\textcolor{themeAlert}{\textbf{IX vs MC: slightly more}}
+
+			\small
+			\begin{itemize}
+				\item MC squeezes \textbf{all} objects together every collection: no waste, but slow.
+				\item IX keeps small waste: only \textbf{whole lines} are reused, one line is skipped per hole.
+				\item Defragmentation is \textbf{partial}: only when needed, only on candidates.
+			\end{itemize}
+		\end{column}
+	\end{columns}
+\end{frame}
+
 \section{Conclusion}
 
 \begin{frame}{Related Work}
