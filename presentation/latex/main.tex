@@ -335,7 +335,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\begin{itemize}
 		\item Memory is divided into \textbf{fixed-size regions}. Objects can't span regions.
 		\item \textbf{Bump allocation:} each new object goes right after the previous one, by advancing (\emph{bumping}) a pointer. When no free region is left, we mark and sweep again.
-		\item \textbf{Sweep:} a region holding \alert{any} live object is \emph{unavailable}, all others are \emph{free}.
+		\item A region holding \alert{any} live object is \emph{unavailable}, all others are \emph{free}.
 	\end{itemize}
 
 	\centering
@@ -526,9 +526,51 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Initial Allocation}
-	\placeholder{All blocks start empty. A thread-local allocator takes an empty block from the global allocator and bump allocates into it until the heap is exhausted, which triggers a collection.}
+	\begin{itemize}
+		\item All blocks start \textbf{empty}.
+		\item Each thread's allocator takes an empty block from the \textbf{global allocator} and bump allocates into it.
+		\item Block full: take another. No empty blocks left: the heap is full, so a \alert{collection} starts.
+	\end{itemize}
 
-	\diagramplaceholder{global free block pool handing empty blocks to a thread-local allocator, which fills each block with a bump pointer}
+	\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		block/.style={draw=themeText, very thick},
+		obj/.style={draw=themeText, fill=themeAccent!35},
+		note/.style={font=\scriptsize, text=themeText!80},
+		take/.style={-{Stealth[length=2.5mm, width=2mm]}, draw=themeText, thick},
+		bump/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAccent, thick}
+		]
+		\node[note, anchor=south west] at (0, 0.55) {\textbf{Global allocator}};
+		\foreach \y in {0, -0.7, -1.4} {
+				\draw[block, fill=white] (0, \y) rectangle ++(2.0, 0.5);
+			}
+
+		\draw[take] (2.2, -0.45) -- node[note, above] {empty block} (3.8, -0.45);
+
+		\node[note, anchor=south west] at (4.0, 0.55) {\textbf{Thread-local allocator}};
+		\draw[obj] (4.00, -0.7) rectangle ++(0.45, 0.5);
+		\draw[obj] (4.45, -0.7) rectangle ++(0.3, 0.5);
+		\draw[obj] (4.75, -0.7) rectangle ++(0.6, 0.5);
+		\draw[obj] (5.35, -0.7) rectangle ++(0.25, 0.5);
+		\draw[obj] (5.60, -0.7) rectangle ++(0.4, 0.5);
+		\draw[block] (4.0, -0.7) rectangle ++(2.0, 0.5);
+		\node[note, anchor=north] at (5.0, -0.75) {full};
+
+		\draw[obj] (6.20, -0.7) rectangle ++(0.5, 0.5);
+		\draw[obj] (6.70, -0.7) rectangle ++(0.3, 0.5);
+		\draw[obj] (7.00, -0.7) rectangle ++(0.45, 0.5);
+		\draw[block] (6.2, -0.7) rectangle ++(2.0, 0.5);
+		\node[note, anchor=north] at (7.2, -0.75) {current};
+
+		\draw[bump] (7.45, 0.05) -- (7.45, -0.2);
+		\node[note, anchor=west, text=themeAccent] at (7.50, 0.05) {cursor};
+
+		\draw[obj] (0, -2.4) rectangle ++(0.5, 0.3);
+		\node[note, anchor=west] at (0.55, -2.25) {object (any size)};
+		\draw[block, fill=white] (4.0, -2.4) rectangle ++(0.5, 0.3);
+		\node[note, anchor=west] at (4.55, -2.25) {free space};
+	\end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Identification and Reclamation}
@@ -565,11 +607,10 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 
 \section{Opportunistic Defragmentation}
 
-\begin{frame}{Why Defragment?}
-	\placeholder{A pure mark-region collector never moves objects, so fragmented blocks stay partially used forever.}
-\end{frame}
-
 \begin{frame}{Opportunistic Evacuation}
+	\textcolor{themeExample}{\textbf{Answers question 2:}} move objects out of fragmented blocks while marking, only when needed.
+
+	\medskip
 	\placeholder{Before collection, choose candidate blocks to evacuate and target space. During marking, move objects off candidates and leave forwarding pointers; stop moving when space runs out. 2.5\% of the heap is reserved as evacuation headroom.}
 
 	\diagramplaceholder{fragmented candidate block, live objects copied into holes of a target block, forwarding pointers left behind}
