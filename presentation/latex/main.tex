@@ -468,9 +468,61 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Blocks and Lines}
-	\placeholder{Immix manages memory at two granularities: coarse 32KB blocks and fine 128B lines. Objects may span lines but not blocks.}
+	\textcolor{themeExample}{\textbf{Answers question 1:}} use big blocks when possible, small lines when necessary.
 
-	\diagramplaceholder{heap $\to$ 32KB blocks $\to$ 256 lines of 128B each, with small objects inside lines}
+	\medskip
+	\begin{columns}[c]
+		\begin{column}{0.45\textwidth}
+			\begin{itemize}
+				\item 32KB \textbf{blocks}, split into 128B \textbf{lines}.
+				\item Free block: reclaimed \textbf{whole}.
+				\item Partly used block: new objects fill its \textbf{free lines}.
+				\item Objects span lines, never blocks.
+			\end{itemize}
+		\end{column}
+
+		\begin{column}{0.53\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					block/.style={draw=themeText, very thick, fill=white},
+					zoom/.style={draw=themeAccent, very thick, fill=themeAccent!10},
+					line/.style={draw=themeText!60, fill=white},
+					live/.style={fill=themeExample!60},
+					new/.style={fill=themeAccent!45},
+					note/.style={font=\scriptsize, text=themeText!80}
+				]
+				\node[note, anchor=south west] at (0, 0.5) {\textbf{Heap: 32KB blocks}};
+				\draw[block] (0.00, 0) rectangle ++(1.4, 0.45);
+				\draw[zoom] (1.55, 0) rectangle ++(1.4, 0.45);
+				\draw[block] (3.10, 0) rectangle ++(1.4, 0.45);
+				\draw[block] (4.65, 0) rectangle ++(1.4, 0.45);
+				\draw[dashed, themeAccent] (1.55, 0) -- (0, -1.0);
+				\draw[dashed, themeAccent] (2.95, 0) -- (6.0, -1.0);
+
+				\draw[line] (0.00, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (0.75, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (1.50, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (2.25, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (3.00, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (3.75, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (4.50, -1.6) rectangle ++(0.75, 0.6);
+				\draw[line] (5.25, -1.6) rectangle ++(0.75, 0.6);
+				\fill[live] (0.1, -1.4500000000000002) rectangle (1.15, -1.1500000000000001);
+				\fill[live] (3.1, -1.4500000000000002) rectangle (3.6, -1.1500000000000001);
+				\fill[new] (1.6, -1.4500000000000002) rectangle (2.15, -1.1500000000000001);
+				\fill[new] (2.25, -1.4500000000000002) rectangle (2.9, -1.1500000000000001);
+				\draw[very thick, themeAccent] (0, -1.6) rectangle (6.0, -1.0);
+				\draw[decorate, decoration={brace, amplitude=4pt, mirror}, themeAccent, thick] (1.5, -1.68) -- (3.0, -1.68) node[midway, below=4pt, note] {free lines used};
+
+				\fill[live] (0, -3.15) rectangle ++(0.4, 0.25);
+				\node[note, anchor=west] at (0.45, -3.02) {live};
+				\fill[new] (1.4, -3.15) rectangle ++(0.4, 0.25);
+				\node[note, anchor=west] at (1.85, -3.02) {new};
+				\draw[line] (2.8, -3.15) rectangle ++(0.4, 0.25);
+				\node[note, anchor=west] at (3.25, -3.02) {free line};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Initial Allocation}
