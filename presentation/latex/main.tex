@@ -730,10 +730,76 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Conservative Line Marking}
-	\placeholder{Most objects are under 128B and span at most two lines. Mark only the start line; the allocator skips the first line of each hole, which implicitly covers the second line. Medium objects are marked exactly.}
+\begin{frame}{Exact Line Marking}
+	\begin{itemize}
+		\item Every line a live object lies on must be marked, or its space could be reused.
+		\item \textbf{Exact marking}, for each live object:
+		      \begin{enumerate}
+			      \item read its type to find its \textbf{size},
+			      \item loop over its memory, marking \textbf{each line}.
+		      \end{enumerate}
+		\item \textbf{Mark-sweep} just sets \textbf{one bit} in the header compared to line marking which is \alert{expensive}.
+	\end{itemize}
 
-	\diagramplaceholder{small object straddling two lines: only the first line is marked, the next line is treated as implicitly marked}
+	\begin{exampleblock}{Key observation}
+		\vspace{0.1em}
+		Most objects are smaller than a line (128B), so they span \textbf{at most two lines}.
+	\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Conservative Line Marking}
+	\begin{itemize}
+		\item \textbf{Small object} (up to a line): mark only its \textbf{start line}. No size lookup, one write.
+		\item Its possible second line: the allocator \textbf{skips the first line} of every hole.
+		\item \textbf{Medium object} (larger than a line): marked exactly, but rare.
+		\item One \textbf{header bit}, set at allocation, says small or medium.
+	\end{itemize}
+
+	\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		block/.style={draw=themeText, very thick},
+		lineSep/.style={draw=themeText!40},
+		live/.style={fill=themeExample!60},
+		marked/.style={draw=themeText, fill=themeText!70},
+		skipped/.style={draw=themeText, dashed, fill=themeText!20},
+		unmarked/.style={draw=themeText, fill=white},
+		start/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAccent, thick},
+		note/.style={font=\scriptsize, text=themeText!80},
+		rowlabel/.style={anchor=west, align=left}
+		]
+		\fill[live] (3.50, 0.1) rectangle (4.00, 0.4);
+		\fill[live] (4.40, 0.1) rectangle (5.30, 0.4);
+		\fill[live] (7.50, 0.1) rectangle (8.00, 0.4);
+		\draw[lineSep] (4.20, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.00, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.80, 0) -- ++(0, 0.5);
+		\draw[lineSep] (6.60, 0) -- ++(0, 0.5);
+		\draw[lineSep] (7.40, 0) -- ++(0, 0.5);
+		\draw[lineSep] (8.20, 0) -- ++(0, 0.5);
+		\draw[lineSep] (9.00, 0) -- ++(0, 0.5);
+		\draw[block] (3.4, 0) rectangle ++(6.40, 0.5);
+		\draw[marked] (3.40, -0.55) rectangle ++(0.80, 0.3);
+		\draw[marked] (4.20, -0.55) rectangle ++(0.80, 0.3);
+		\draw[skipped] (5.00, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (5.80, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (6.60, -0.55) rectangle ++(0.80, 0.3);
+		\draw[marked] (7.40, -0.55) rectangle ++(0.80, 0.3);
+		\draw[skipped] (8.20, -0.55) rectangle ++(0.80, 0.3);
+		\draw[unmarked] (9.00, -0.55) rectangle ++(0.80, 0.3);
+		\node[note, anchor=north, align=center] at (5.40, -0.6) {object's\\end};
+		\node[note, anchor=north, align=center] at (8.60, -0.6) {wasted};
+		\draw[start] (6.20, -1.3) -- (6.20, -0.6);
+		\draw[start] (9.40, -1.3) -- (9.40, -0.6);
+		\node[note, anchor=north, text=themeAccent] at (7.80, -1.35) {allocation starts here};
+		\draw[themeAccent!60] (6.20, -1.3) -- (9.40, -1.3);
+		\node[rowlabel] at (0, 0.25) {\textbf{Block}};
+		\node[rowlabel] at (0, -0.4) {\textbf{Line map}};
+		\draw[marked] (10.2, 0.0) rectangle ++(0.25, 0.25);
+		\node[note, anchor=west] at (10.5, 0.125) {marked};
+		\draw[skipped] (10.2, -0.5) rectangle ++(0.25, 0.25);
+		\node[note, anchor=west] at (10.5, -0.375) {skipped};
+	\end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Immix Heap Organization}
