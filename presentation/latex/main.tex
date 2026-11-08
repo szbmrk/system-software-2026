@@ -860,9 +860,53 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Demand-Driven Overflow Allocation}
-	\placeholder{Medium objects (larger than a line) that do not fit the current hole go to a separate overflow allocator using empty blocks, so small holes are not skipped.}
+	\begin{itemize}
+		\item \textbf{Problem:} a medium object (larger than a line) may fit no hole of a recycled block, so the allocator \alert{skips and wastes} many holes.
+		\item \textbf{Fix:} each allocator also has an \textbf{overflow allocator} that only uses empty blocks.
+	\end{itemize}
 
-	\diagramplaceholder{medium object too large for the current hole, redirected to an empty overflow block instead of skipping the hole}
+	\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		block/.style={draw=themeText, very thick},
+		lineSep/.style={draw=themeText!40},
+		live/.style={fill=themeExample!60},
+		new/.style={draw=themeText, fill=themeAccent!35},
+		medium/.style={draw=themeText, fill=themeAlert!30},
+		go/.style={-{Stealth[length=2.5mm, width=2mm]}, draw=themeAlert, thick},
+		note/.style={font=\scriptsize, text=themeText!80},
+		rowlabel/.style={anchor=west, align=left}
+		]
+		\fill[live] (3.26, 0.10) rectangle (4.25, 0.40);
+		\draw[new] (4.33, 0.10) rectangle (4.63, 0.40);
+		\draw[new] (4.69, 0.10) rectangle (5.02, 0.40);
+		\fill[live] (6.01, 0.10) rectangle (6.39, 0.40);
+		\fill[live] (6.55, 0.10) rectangle (6.94, 0.40);
+		\draw[lineSep] (3.75, 0) -- ++(0, 0.5);
+		\draw[lineSep] (4.30, 0) -- ++(0, 0.5);
+		\draw[lineSep] (4.85, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.40, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.95, 0) -- ++(0, 0.5);
+		\draw[lineSep] (6.50, 0) -- ++(0, 0.5);
+		\draw[lineSep] (7.05, 0) -- ++(0, 0.5);
+		\draw[block] (3.2, 0) rectangle ++(4.40, 0.5);
+		\node[rowlabel] at (0, 0.25) {\textbf{Recycled block}\\{\scriptsize small holes}};
+		\draw[decorate, decoration={brace, amplitude=4pt}, themeAccent, thick] (4.33, 0.58) -- (5.92, 0.58) node[midway, above=4pt, note] {hole: kept for small objects};
+		\draw[medium] (3.23, -1.20) rectangle (5.37, -0.90);
+		\draw[lineSep] (3.75, -1.3) -- ++(0, 0.5);
+		\draw[lineSep] (4.30, -1.3) -- ++(0, 0.5);
+		\draw[lineSep] (4.85, -1.3) -- ++(0, 0.5);
+		\draw[lineSep] (5.40, -1.3) -- ++(0, 0.5);
+		\draw[lineSep] (5.95, -1.3) -- ++(0, 0.5);
+		\draw[lineSep] (6.50, -1.3) -- ++(0, 0.5);
+		\draw[lineSep] (7.05, -1.3) -- ++(0, 0.5);
+		\draw[block] (3.2, -1.3) rectangle ++(4.40, 0.5);
+		\node[rowlabel] at (0, -1.05) {\textbf{Overflow block}\\{\scriptsize starts empty}};
+		\draw[medium] (8.50, 0.1) rectangle ++(2.20, 0.3);
+		\node[note, anchor=south] at (9.60, 0.45) {medium object (4 lines)};
+		\node[note, anchor=north, text=themeAlert] at (9.60, 0.05) {fits no hole};
+		\draw[go] (9.60, -0.35) to[out=-90, in=0] (5.50, -1.05);
+	\end{tikzpicture}
 \end{frame}
 
 \section{Opportunistic Defragmentation}
