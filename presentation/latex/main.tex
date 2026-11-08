@@ -576,9 +576,100 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Identification and Reclamation}
-	\placeholder{Tracing marks objects and their lines in a line map. A coarse-grained sweep classifies blocks as free, recyclable, or unavailable.}
+	\begin{enumerate}
+		\item \textbf{Identification:} trace from the roots and mark each live object \textbf{and its lines} in a \textbf{line map}.
+	\end{enumerate}
 
-	\diagramplaceholder{line map of several blocks after marking, each block labelled free / recyclable / unavailable}
+	{\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		block/.style={draw=themeText, very thick},
+		lineSep/.style={draw=themeText!40},
+		live/.style={fill=themeExample!60},
+		dead/.style={fill=themeTrack},
+		marked/.style={draw=themeText, fill=themeText!70},
+		unmarked/.style={draw=themeText, fill=white},
+		map/.style={-{Stealth[length=1.6mm, width=1.4mm]}, draw=themeText!50},
+		note/.style={font=\scriptsize, text=themeText!80},
+		rowlabel/.style={anchor=west, align=left}
+		]
+		\fill[dead] (3.31, 0.1) rectangle (4.21, 0.4);
+		\fill[dead] (4.55, 0.1) rectangle (5.45, 0.4);
+		\draw[lineSep] (3.56, 0) -- ++(0, 0.5);
+		\draw[lineSep] (3.92, 0) -- ++(0, 0.5);
+		\draw[lineSep] (4.28, 0) -- ++(0, 0.5);
+		\draw[lineSep] (4.64, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.00, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.36, 0) -- ++(0, 0.5);
+		\draw[lineSep] (5.72, 0) -- ++(0, 0.5);
+		\draw[block] (3.20, 0) rectangle ++(2.88, 0.5);
+		\draw[unmarked] (3.20, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (3.56, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (3.92, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (4.28, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (4.64, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (5.00, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (5.36, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (5.72, -0.9) rectangle ++(0.36, 0.3);
+		\node[note, anchor=north, align=center] at (4.64, -0.95) {\textcolor{themeExample}{\textbf{free}}};
+		\draw[map] (4.64, -0.05) -- (4.64, -0.55);
+		\fill[live] (6.64, 0.1) rectangle (7.20, 0.4);
+		\fill[dead] (7.37, 0.1) rectangle (7.93, 0.4);
+		\fill[live] (8.44, 0.1) rectangle (8.72, 0.4);
+		\fill[dead] (8.83, 0.1) rectangle (9.39, 0.4);
+		\draw[lineSep] (6.94, 0) -- ++(0, 0.5);
+		\draw[lineSep] (7.30, 0) -- ++(0, 0.5);
+		\draw[lineSep] (7.66, 0) -- ++(0, 0.5);
+		\draw[lineSep] (8.02, 0) -- ++(0, 0.5);
+		\draw[lineSep] (8.38, 0) -- ++(0, 0.5);
+		\draw[lineSep] (8.74, 0) -- ++(0, 0.5);
+		\draw[lineSep] (9.10, 0) -- ++(0, 0.5);
+		\draw[block] (6.58, 0) rectangle ++(2.88, 0.5);
+		\draw[marked] (6.58, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (6.94, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (7.30, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (7.66, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (8.02, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (8.38, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (8.74, -0.9) rectangle ++(0.36, 0.3);
+		\draw[unmarked] (9.10, -0.9) rectangle ++(0.36, 0.3);
+		\node[note, anchor=north, align=center] at (8.02, -0.95) {\textcolor{themeExample}{\textbf{recyclable}}};
+		\draw[map] (8.02, -0.05) -- (8.02, -0.55);
+		\fill[live] (9.98, 0.1) rectangle (10.97, 0.4);
+		\fill[live] (10.97, 0.1) rectangle (11.76, 0.4);
+		\fill[live] (11.76, 0.1) rectangle (12.82, 0.4);
+		\draw[lineSep] (10.32, 0) -- ++(0, 0.5);
+		\draw[lineSep] (10.68, 0) -- ++(0, 0.5);
+		\draw[lineSep] (11.04, 0) -- ++(0, 0.5);
+		\draw[lineSep] (11.40, 0) -- ++(0, 0.5);
+		\draw[lineSep] (11.76, 0) -- ++(0, 0.5);
+		\draw[lineSep] (12.12, 0) -- ++(0, 0.5);
+		\draw[lineSep] (12.48, 0) -- ++(0, 0.5);
+		\draw[block] (9.96, 0) rectangle ++(2.88, 0.5);
+		\draw[marked] (9.96, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (10.32, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (10.68, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (11.04, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (11.40, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (11.76, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (12.12, -0.9) rectangle ++(0.36, 0.3);
+		\draw[marked] (12.48, -0.9) rectangle ++(0.36, 0.3);
+		\node[note, anchor=north, align=center] at (11.40, -0.95) {\textcolor{themeAlert}{\textbf{unavailable}}};
+		\draw[map] (11.40, -0.05) -- (11.40, -0.55);
+		\node[rowlabel] at (0, 0.25) {\textbf{Blocks}\\{\scriptsize after tracing}};
+		\node[rowlabel] at (0, -0.75) {\textbf{Line map}\\{\scriptsize one mark per line}};
+		\fill[live] (3.2, -1.95) rectangle ++(0.4, 0.25);
+		\node[note, anchor=west] at (3.65, -1.825) {live object};
+		\fill[dead] (6.2, -1.95) rectangle ++(0.4, 0.25);
+		\node[note, anchor=west] at (6.65, -1.825) {dead object};
+		\draw[marked] (9.2, -1.95) rectangle ++(0.25, 0.25);
+		\node[note, anchor=west] at (9.65, -1.825) {marked line};
+	\end{tikzpicture}\par}
+
+	\begin{enumerate}
+		\setcounter{enumi}{1}
+		\item \textbf{Reclamation:} read the \textbf{line map} and find the entirely free and partially free blocks. Free blocks return to the \textbf{global pool} and partially free blocks are \textbf{recycled} for the next allocation.
+	\end{enumerate}
 \end{frame}
 
 \begin{frame}{Conservative Line Marking}
