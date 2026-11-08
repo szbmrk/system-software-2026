@@ -1017,13 +1017,27 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \section{Evaluation}
 
 \begin{frame}{Methodology}
-	\placeholder{20 DaCapo, SPECjvm98 and pjbb2000 benchmarks; Jikes RVM with MMTk; Core 2 Duo, AMD Athlon, PowerPC 970; replay compilation; heaps from 1$\times$ to 6$\times$ the minimum.}
+	\begin{itemize}
+		\item \textbf{Platform:} implemented in \textbf{Jikes RVM}, a Java VM, using its memory management toolkit \textbf{MMTk}. MS, SS and MC come from the same toolkit.
+		\item \textbf{Benchmarks:} 20 standard Java benchmark programs.
+		\item \textbf{Hardware:} 3 different machines.
+		\item \textbf{Heap sizes:} 1$\times$ to 6$\times$ the smallest heap mark-sweep can run in.
+		\item \textbf{Runs:} each experiment 6 times. Drop the fastest and slowest, report the mean of the other 4.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Full Heap Performance}
-	\placeholder{Immix beats all canonical collectors at every heap size on all three architectures, matching SS mutator time and MS collection time.}
+	\begin{itemize}
+		\item \textbf{(a) Total:} IX is \textbf{lowest at every heap size}, typically 5--10\% faster.
+		\item \textbf{(d) Mutator:} IX is as fast as SS, thanks to locality.
+		\item \textbf{(f) Collector:} IX collects as fast as MS.
+	\end{itemize}
 
-	\paperplaceholder{Figure 3 (full heap performance comparison)}
+	\medskip
+	\centering
+	\includegraphics[width=0.32\linewidth]{figures/fig3a.png}\hfill
+	\includegraphics[width=0.32\linewidth]{figures/fig3d.png}\hfill
+	\includegraphics[width=0.32\linewidth]{figures/fig3f.png}
 \end{frame}
 
 \begin{frame}{Full Heap Results at 2$\times$ Minimum Heap}
