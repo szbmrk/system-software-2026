@@ -895,15 +895,10 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	How immix differs:
 
 	\begin{itemize}
-		\item \textbf{Defragmentation:} JRockit and IBM use \alert{compaction}; immix evacuates opportunistically in a \textbf{single pass}.
-		\item \textbf{Granularity:} IBM never reuses gaps smaller than 512 bytes; immix reclaims \textbf{128-byte lines}.
+		\item \textbf{Defragmentation:} JRockit and IBM use \alert{compaction}, immix evacuates opportunistically in a \textbf{single pass}.
+		\item \textbf{Granularity:} IBM never reuses gaps smaller than 512 bytes, immix reclaims \textbf{128-byte lines}.
 		\item \textbf{Metadata:} 0.8\% of the heap for immix vs 3.1\% for IBM.
 	\end{itemize}
-
-	\begin{exampleblock}{Closest relative}
-		\vspace{0.1em}
-		Metronome also defragments on demand, but needs exact fragmentation statistics from the previous collection.
-	\end{exampleblock}
 \end{frame}
 
 \begin{frame}{Conclusion}
