@@ -467,6 +467,8 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{columns}
 \end{frame}
 
+\section{Immix}
+
 \begin{frame}{Blocks and Lines}
 	\textcolor{themeExample}{\textbf{Answers question 1:}} use big blocks when possible, small lines when necessary.
 
@@ -579,6 +581,12 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\diagramplaceholder{line map of several blocks after marking, each block labelled free / recyclable / unavailable}
 \end{frame}
 
+\begin{frame}{Conservative Line Marking}
+	\placeholder{Most objects are under 128B and span at most two lines. Mark only the start line; the allocator skips the first line of each hole, which implicitly covers the second line. Medium objects are marked exactly.}
+
+	\diagramplaceholder{small object straddling two lines: only the first line is marked, the next line is treated as implicitly marked}
+\end{frame}
+
 \begin{frame}{Steady State Allocation}
 	\placeholder{Threads allocate into recycled blocks in address order: scan the line map for a hole, bump allocate into it, move to the next hole. Empty blocks are used only after all recyclable blocks.}
 
@@ -623,29 +631,9 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \end{frame}
 
 \begin{frame}{Mixing Marking and Evacuation}
-	\placeholder{Per-object decision during the trace: unmarked and unmovable $\to$ mark; unmarked and movable $\to$ evacuate and forward; forwarded $\to$ update reference. Single pass.}
+	\placeholder{Per-object decision during the trace: unmarked and unmovable $\to$ mark; unmarked and movable $\to$ evacuate and forward; forwarded $\to$ update reference. Single pass. Racing threads use compare-and-swap to forward an object; pinned objects are never moved, only marked.}
 
 	\diagramplaceholder{flowchart of the per-object decision during tracing}
-\end{frame}
-
-\begin{frame}{Parallel Evacuation and Pinning}
-	\placeholder{Compare-and-swap to race on forwarding, paid only in the specialized defragmenting trace. Pinned objects are simply marked in place.}
-\end{frame}
-
-\section{Implementation Details}
-
-\begin{frame}{Block and Line Size}
-	\placeholder{128B lines roughly match cache lines and fit 1--4 objects; 32KB blocks roughly match pages. Worst-case fragmentation bounds: about 25\% per block, 97\% per line in theory. Metadata is one byte per line and four per block: 0.8\% overhead.}
-\end{frame}
-
-\begin{frame}{Conservative Line Marking}
-	\placeholder{Most objects are under 128B and span at most two lines. Mark only the start line; the allocator skips the first line of each hole, which implicitly covers the second line. Medium objects are marked exactly.}
-
-	\diagramplaceholder{small object straddling two lines: only the first line is marked, the next line is treated as implicitly marked}
-\end{frame}
-
-\begin{frame}{Optimizing Hot Paths}
-	\placeholder{The allocator matches semi-space speed and tracing comes close to mark-sweep. Lines are marked when an object is scanned, not when it is marked, which hides the cost.}
 \end{frame}
 
 \section{Evaluation}
