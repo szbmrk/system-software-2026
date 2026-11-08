@@ -1014,12 +1014,6 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	$\to$ \textbf{all} blocks with 6 or 5 holes become candidates.
 \end{frame}
 
-\begin{frame}{Mixing Marking and Evacuation}
-	\placeholder{Per-object decision during the trace: unmarked and unmovable $\to$ mark; unmarked and movable $\to$ evacuate and forward; forwarded $\to$ update reference. Single pass. Racing threads use compare-and-swap to forward an object; pinned objects are never moved, only marked.}
-
-	\diagramplaceholder{flowchart of the per-object decision during tracing}
-\end{frame}
-
 \section{Evaluation}
 
 \begin{frame}{Methodology}
@@ -1093,8 +1087,43 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{itemize}
 \end{frame}
 
+\begin{frame}{Why Immix Gets All Three}
+	\begin{itemize}
+		\item \textcolor{themeAccent}{\textbf{Mutator performance}} $\leftarrow$ \textbf{bump allocation into blocks and holes}: objects allocated together sit together, like SS.
+		\item \textcolor{themeAccent}{\textbf{Fast collection}} $\leftarrow$ \textbf{mostly non-moving}: mark, then read the line map, like MS. Conservative marking keeps it cheap, defragmentation runs only on demand, in the same pass.
+		\item \textcolor{themeAccent}{\textbf{Space efficiency}} $\leftarrow$ \textbf{lines} reuse partly used blocks, \textbf{defragmentation} frees fragmented ones, and there is no 2$\times$ copy reserve.
+	\end{itemize}
+\end{frame}
+
 \begin{frame}{Conclusion}
-	\placeholder{Mark-region is a new collector family; opportunistic defragmentation mixes copying and marking in one pass; immix achieves all three performance objectives.}
+	\begin{columns}[c]
+		\begin{column}{0.56\textwidth}
+			\begin{itemize}
+				\item \textbf{Immix:} mark-region with \textbf{blocks and lines}, plus \textbf{opportunistic defragmentation} that moves objects only when needed.
+				\item \textbf{Faster than all canonical collectors} at every heap size, typically by \textbf{5--10\%}.
+			\end{itemize}
+		\end{column}
+
+		\begin{column}{0.42\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					font=\footnotesize,
+					goal/.style={draw=themeText, rounded corners=2pt, fill=themeAccent!20, align=center, inner sep=3pt}
+				]
+				\coordinate (top) at (0, 2.2);
+				\coordinate (left) at (-1.7, -1.1);
+				\coordinate (right) at (1.7, -1.1);
+
+				\draw[themeText, thick] (top) -- (left) -- (right) -- cycle;
+
+				\node[goal] at (top) {Fast\\collection};
+				\node[goal] at (left) {Space\\efficiency};
+				\node[goal] at (right) {Mutator\\performance};
+
+				\node[font=\small\bfseries, text=themeExample, align=center] at (0, 0.05) {immix\\all three};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{References}
