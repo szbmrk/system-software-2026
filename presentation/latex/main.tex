@@ -730,6 +730,8 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 	\end{tikzpicture}
 \end{frame}
 
+\section{Optimizations}
+
 \begin{frame}{Exact Line Marking}
 	\begin{itemize}
 		\item Every line a live object lies on must be marked, or its space could be reused.
@@ -800,12 +802,6 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 		\draw[skipped] (10.2, -0.5) rectangle ++(0.25, 0.25);
 		\node[note, anchor=west] at (10.5, -0.375) {skipped};
 	\end{tikzpicture}
-\end{frame}
-
-\begin{frame}{Immix Heap Organization}
-	\placeholder{Walk through the paper's figure: global free block allocator, recycled blocks, cursor and limit, line mark legend.}
-
-	\paperplaceholder{Figure 2 (immix heap organization)}
 \end{frame}
 
 \begin{frame}{Recycling and Allocation Policies}
