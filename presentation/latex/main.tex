@@ -304,53 +304,89 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 
 \begin{frame}{Mark-Region Collectors}
 	\begin{itemize}
-		\item Memory is divided into \textbf{fixed-size regions}. Objects can't span regions.
-		\item \textbf{Bump allocation:} each new object goes right after the previous one, by advancing (\emph{bumping}) a pointer. When no free region is left, we mark and sweep again.
-		\item A region holding \alert{any} live object is \emph{unavailable}, all others are \emph{free}.
+		\item Memory is split into \textbf{fixed-size regions}. Objects can't span them.
+		\item \textbf{Bump allocation}: objects go one after another, if one does not fit, it goes to the \textbf{next free region}.
+		\item A region with \alert{any} live object stays \emph{unavailable}.
 	\end{itemize}
 
+	\medskip
 	\centering
 	\begin{tikzpicture}[
 		font=\footnotesize,
-		heapcell/.style={draw=themeText, minimum height=0.5cm, minimum width=0.375cm, inner sep=0pt, anchor=south west},
-		live/.style={heapcell, fill=themeExample!35},
-		dead/.style={heapcell, fill=themeTrack, dashed},
-		free/.style={heapcell, fill=white},
-		new/.style={heapcell, fill=themeAccent!35},
+		objbase/.style={draw=themeText, minimum height=0.5cm, inner sep=0pt, anchor=south west, font=\scriptsize},
+		live/.style={objbase, fill=themeExample!45},
+		dead/.style={objbase, fill=themeTrack},
+		new/.style={objbase, fill=themeAccent!35},
+		free/.style={objbase, fill=white},
+		waste/.style={objbase, fill=themeAlert!25},
 		region/.style={draw=themeText, very thick},
+		unavail/.style={draw=themeAlert, very thick},
 		note/.style={font=\scriptsize, text=themeText!80},
 		rowlabel/.style={anchor=west, align=left},
-		bump/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAccent, thick}
+		bump/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAlert, thick}
 		]
-		\foreach \kinds [count=\r from 0] in {{live,dead,dead,dead}, {dead,dead,dead,dead}, {live,live,dead,live}, {dead,dead,dead,dead}, {dead,live,dead,dead}, {dead,dead,dead,dead}} {
-				\pgfmathsetmacro{\x}{4.4 + 1.6 * \r}
-				\foreach \kind [count=\c from 0] in \kinds {
-					\node[\kind] at (\x + 0.375 * \c, 0) {};
-				}
-				\draw[region] (\x, 0) rectangle ++(1.5, 0.5);
-			}
-
-		\foreach \kinds [count=\r from 0] in {{live,dead,dead,dead}, {new,new,free,free}, {live,live,dead,live}, {free,free,free,free}, {dead,live,dead,dead}, {free,free,free,free}} {
-				\pgfmathsetmacro{\x}{4.4 + 1.6 * \r}
-				\foreach \kind [count=\c from 0] in \kinds {
-					\node[\kind] at (\x + 0.375 * \c, -1.3) {};
-				}
-				\draw[region] (\x, -1.3) rectangle ++(1.5, 0.5);
-			}
-
-		\foreach \r/\status in {0/unavailable, 1/free, 2/unavailable, 3/free, 4/unavailable, 5/free} {
-				\node[note, anchor=north] at (5.15 + 1.6 * \r, -1.35) {\status};
-			}
-
-		\draw[bump] (6.75, -0.25) -- (6.75, -0.75);
-		\node[note, anchor=west, text=themeAccent] at (6.8, -0.5) {cursor: next object goes here};
-
-		\node[rowlabel] at (0, 0.25) {\textbf{After marking}\\{\scriptsize live and dead objects}};
-		\node[rowlabel] at (0, -1.05) {\textbf{After sweep}\\{\scriptsize whole regions reclaimed}};
-		\node[live, minimum width=0.5cm, label={[note]right:live}] at (4.6, -2.6) {};
-		\node[dead, minimum width=0.5cm, label={[note]right:dead}] at (6.2, -2.6) {};
-		\node[new, minimum width=0.5cm, label={[note]right:new}] at (7.8, -2.6) {};
-		\node[free, minimum width=0.5cm, label={[note]right:free}] at (9.4, -2.6) {};
+		\fill[themeAlert!25] (3.00, -1.9) rectangle ++(2.2, 0.5);
+		\fill[themeAlert!25] (5.40, -1.9) rectangle ++(2.2, 0.5);
+		\fill[themeAlert!25] (10.20, -1.9) rectangle ++(2.2, 0.5);
+		\node[new, minimum width=0.60cm] at (3.00, 0) {A};
+		\node[new, minimum width=0.50cm] at (3.60, 0) {B};
+		\node[new, minimum width=0.70cm] at (4.10, 0) {C};
+		\draw[region] (3.00, 0) rectangle ++(2.2, 0.5);
+		\node[new, minimum width=0.60cm] at (5.40, 0) {D};
+		\node[new, minimum width=0.90cm] at (6.00, 0) {E};
+		\node[new, minimum width=0.50cm] at (6.90, 0) {F};
+		\draw[region] (5.40, 0) rectangle ++(2.2, 0.5);
+		\node[new, minimum width=1.00cm] at (7.80, 0) {G};
+		\node[new, minimum width=0.80cm] at (8.80, 0) {H};
+		\draw[region] (7.80, 0) rectangle ++(2.2, 0.5);
+		\node[new, minimum width=0.40cm] at (10.20, 0) {I};
+		\node[new, minimum width=0.80cm] at (10.60, 0) {J};
+		\node[new, minimum width=0.60cm] at (11.40, 0) {K};
+		\node[new, minimum width=0.30cm] at (12.00, 0) {L};
+		\draw[region] (10.20, 0) rectangle ++(2.2, 0.5);
+		\draw[bump] (5.00, 0.53) to[out=70, in=110] node[note, above, text=themeAlert] {D does not fit: next region} (5.70, 0.53);
+		\node[live, minimum width=0.60cm] at (3.00, -0.95) {A};
+		\node[dead, minimum width=0.50cm] at (3.60, -0.95) {B};
+		\node[live, minimum width=0.70cm] at (4.10, -0.95) {C};
+		\draw[region] (3.00, -0.95) rectangle ++(2.2, 0.5);
+		\node[live, minimum width=0.60cm] at (5.40, -0.95) {D};
+		\node[dead, minimum width=0.90cm] at (6.00, -0.95) {E};
+		\node[dead, minimum width=0.50cm] at (6.90, -0.95) {F};
+		\draw[region] (5.40, -0.95) rectangle ++(2.2, 0.5);
+		\node[dead, minimum width=1.00cm] at (7.80, -0.95) {G};
+		\node[dead, minimum width=0.80cm] at (8.80, -0.95) {H};
+		\draw[region] (7.80, -0.95) rectangle ++(2.2, 0.5);
+		\node[live, minimum width=0.40cm] at (10.20, -0.95) {I};
+		\node[dead, minimum width=0.80cm] at (10.60, -0.95) {J};
+		\node[live, minimum width=0.60cm] at (11.40, -0.95) {K};
+		\node[dead, minimum width=0.30cm] at (12.00, -0.95) {L};
+		\draw[region] (10.20, -0.95) rectangle ++(2.2, 0.5);
+		\node[live, minimum width=0.60cm] at (3.00, -1.9) {A};
+		\node[waste, minimum width=0.50cm] at (3.60, -1.9) {B};
+		\node[live, minimum width=0.70cm] at (4.10, -1.9) {C};
+		\draw[unavail] (3.00, -1.9) rectangle ++(2.2, 0.5);
+		\node[note, anchor=north, text=themeAlert] at (4.10, -1.93) {\textbf{unavailable}};
+		\node[live, minimum width=0.60cm] at (5.40, -1.9) {D};
+		\node[waste, minimum width=0.90cm] at (6.00, -1.9) {E};
+		\node[waste, minimum width=0.50cm] at (6.90, -1.9) {F};
+		\draw[unavail] (5.40, -1.9) rectangle ++(2.2, 0.5);
+		\node[note, anchor=north, text=themeAlert] at (6.50, -1.93) {\textbf{unavailable}};
+		\draw[region] (7.80, -1.9) rectangle ++(2.2, 0.5);
+		\node[note, anchor=north, text=themeExample] at (8.90, -1.93) {\textbf{free}};
+		\node[live, minimum width=0.40cm] at (10.20, -1.9) {I};
+		\node[waste, minimum width=0.80cm] at (10.60, -1.9) {J};
+		\node[live, minimum width=0.60cm] at (11.40, -1.9) {K};
+		\node[waste, minimum width=0.30cm] at (12.00, -1.9) {L};
+		\draw[unavail] (10.20, -1.9) rectangle ++(2.2, 0.5);
+		\node[note, anchor=north, text=themeAlert] at (11.30, -1.93) {\textbf{unavailable}};
+		\node[rowlabel] at (0, 0.25) {\textbf{Allocation}};
+		\node[rowlabel] at (0, -0.7) {\textbf{After marking}};
+		\node[rowlabel] at (0, -1.65) {\textbf{After sweep}};
+		\node[new, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:new}] at (3.00, -2.75) {};
+		\node[live, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:live}] at (4.95, -2.75) {};
+		\node[dead, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:dead}] at (6.90, -2.75) {};
+		\node[free, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:free}] at (8.85, -2.75) {};
+		\node[waste, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:wasted}] at (10.80, -2.75) {};
 	\end{tikzpicture}
 \end{frame}
 
@@ -360,7 +396,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 			\textbf{1. How big should regions be?}
 			\begin{itemize}
 				\item \textbf{Large:} one small object \alert{wastes} a whole region.
-				\item \textbf{Small:} less waste, but \alert{slower collection}.
+				\item \textbf{Small:} less waste, but \alert{slower collection} and unable to \alert{allocate big objects}.
 			\end{itemize}
 
 			\medskip
@@ -373,66 +409,45 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 		\begin{column}{0.48\textwidth}
 			\centering
 			\begin{tikzpicture}[
-					heapcell/.style={draw=themeText!60, minimum height=0.5cm, minimum width=0.34cm, inner sep=0pt, anchor=south west},
-					live/.style={heapcell, fill=themeExample!35},
-					dead/.style={heapcell, fill=themeTrack},
-					free/.style={heapcell, fill=white},
+					objbase/.style={draw=themeText, minimum height=0.5cm, inner sep=0pt, anchor=south west},
+					live/.style={objbase, fill=themeExample!45},
+					waste/.style={objbase, fill=themeAlert!25},
+					free/.style={objbase, fill=white},
 					region/.style={draw=themeText, very thick},
 					unavail/.style={draw=themeAlert, very thick},
 					note/.style={font=\scriptsize, text=themeText!80}
 				]
-				\node[dead] at (0.00, 0) {};
-				\node[live] at (0.34, 0) {};
-				\node[dead] at (0.68, 0) {};
-				\node[dead] at (1.02, 0) {};
-				\node[dead] at (1.36, 0) {};
-				\node[dead] at (1.70, 0) {};
-				\node[dead] at (2.04, 0) {};
-				\node[dead] at (2.38, 0) {};
-				\draw[unavail] (0.00, 0) rectangle ++(2.72, 0.5);
-				\node[dead] at (2.86, 0) {};
-				\node[dead] at (3.20, 0) {};
-				\node[dead] at (3.54, 0) {};
-				\node[live] at (3.88, 0) {};
-				\node[dead] at (4.22, 0) {};
-				\node[dead] at (4.56, 0) {};
-				\node[dead] at (4.90, 0) {};
-				\node[dead] at (5.24, 0) {};
-				\draw[unavail] (2.86, 0) rectangle ++(2.72, 0.5);
+				\fill[themeAlert!25] (0.00, 0) rectangle ++(3.00, 0.5);
+				\fill[themeAlert!25] (3.12, 0) rectangle ++(3.00, 0.5);
+				\fill[themeAlert!25] (0.00, -1.9) rectangle ++(0.66, 0.5);
+				\fill[themeAlert!25] (3.90, -1.9) rectangle ++(0.66, 0.5);
+				\node[live, minimum width=0.30cm] at (0.00, 0) {};
+				\node[waste, minimum width=0.80cm] at (0.30, 0) {};
+				\node[waste, minimum width=0.80cm] at (1.10, 0) {};
+				\node[waste, minimum width=0.90cm] at (1.90, 0) {};
+				\node[waste, minimum width=0.78cm] at (3.12, 0) {};
+				\node[live, minimum width=0.30cm] at (3.90, 0) {};
+				\node[waste, minimum width=1.00cm] at (4.20, 0) {};
+				\node[waste, minimum width=0.70cm] at (5.20, 0) {};
+				\draw[unavail] (0.00, 0) rectangle ++(3.00, 0.5);
+				\draw[unavail] (3.12, 0) rectangle ++(3.00, 0.5);
 				\node[note, anchor=south west] at (0, 0.55) {\textbf{2 large regions}};
-				\node[note, anchor=north west] at (0, -0.05) {\alert{both unavailable: 14 cells wasted}};
-				\node[dead] at (0.00, -1.9) {};
-				\node[live] at (0.34, -1.9) {};
-				\draw[unavail] (0.00, -1.9) rectangle ++(0.68, 0.5);
-				\node[free] at (0.82, -1.9) {};
-				\node[free] at (1.16, -1.9) {};
-				\draw[region] (0.82, -1.9) rectangle ++(0.68, 0.5);
-				\node[free] at (1.64, -1.9) {};
-				\node[free] at (1.98, -1.9) {};
-				\draw[region] (1.64, -1.9) rectangle ++(0.68, 0.5);
-				\node[free] at (2.46, -1.9) {};
-				\node[free] at (2.80, -1.9) {};
-				\draw[region] (2.46, -1.9) rectangle ++(0.68, 0.5);
-				\node[free] at (3.28, -1.9) {};
-				\node[free] at (3.62, -1.9) {};
-				\draw[region] (3.28, -1.9) rectangle ++(0.68, 0.5);
-				\node[dead] at (4.10, -1.9) {};
-				\node[live] at (4.44, -1.9) {};
-				\draw[unavail] (4.10, -1.9) rectangle ++(0.68, 0.5);
-				\node[free] at (4.92, -1.9) {};
-				\node[free] at (5.26, -1.9) {};
-				\draw[region] (4.92, -1.9) rectangle ++(0.68, 0.5);
-				\node[free] at (5.74, -1.9) {};
-				\node[free] at (6.08, -1.9) {};
-				\draw[region] (5.74, -1.9) rectangle ++(0.68, 0.5);
+				\node[note, anchor=north west] at (0, -0.05) {\alert{both unavailable: almost all wasted}};
+				\node[live, minimum width=0.30cm] at (0.00, -1.9) {};
+				\node[live, minimum width=0.30cm] at (3.90, -1.9) {};
+				\draw[unavail] (0.00, -1.9) rectangle ++(0.66, 0.5);
+				\draw[region] (0.78, -1.9) rectangle ++(0.66, 0.5);
+				\draw[region] (1.56, -1.9) rectangle ++(0.66, 0.5);
+				\draw[region] (2.34, -1.9) rectangle ++(0.66, 0.5);
+				\draw[region] (3.12, -1.9) rectangle ++(0.66, 0.5);
+				\draw[unavail] (3.90, -1.9) rectangle ++(0.66, 0.5);
+				\draw[region] (4.68, -1.9) rectangle ++(0.66, 0.5);
+				\draw[region] (5.46, -1.9) rectangle ++(0.66, 0.5);
 				\node[note, anchor=south west] at (0, -1.3499999999999999) {\textbf{8 small regions}};
-				\node[note, anchor=north west] at (0, -1.95) {\alert{2 unavailable: 2 cells wasted}};
-
-				\node[live, minimum width=0.4cm, label={[note]right:live}] at (0, -3.2) {};
-				\node[dead, minimum width=0.4cm, label={[note]right:wasted}] at (1.6, -3.2) {};
-				\node[free, minimum width=0.4cm, label={[note]right:free}] at (3.5, -3.2) {};
-				\draw[unavail] (0, -3.8) rectangle ++(0.4, 0.4);
-				\node[note, anchor=west] at (0.45, -3.6) {unavailable region};
+				\node[note, anchor=north west] at (0, -1.95) {\alert{2 unavailable, 6 free: little waste}};
+				\node[live, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:live}] at (0.00, -3.1) {};
+				\node[waste, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:wasted}] at (1.90, -3.1) {};
+				\node[free, minimum width=0.4cm, minimum height=0.3cm, label={[note]right:free}] at (3.80, -3.1) {};
 			\end{tikzpicture}
 		\end{column}
 	\end{columns}
@@ -441,7 +456,7 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 \section{Immix}
 
 \begin{frame}{Blocks (Regions) and Lines}
-	\textcolor{themeExample}{\textbf{Answers question 1:}} use \textbf{both} sizes. Big \textbf{blocks} (regions) keep collection cheap. Small \textbf{lines} inside them keep waste low.
+	\textcolor{themeExample}{\textbf{Answers question 1:}} use \textbf{both} sizes. Big \textbf{blocks} (regions) keep allocation fast and contiguous. Small \textbf{lines} (used for marking) inside them keep waste low.
 
 	\medskip
 	\begin{columns}[c]
