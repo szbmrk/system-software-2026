@@ -932,58 +932,73 @@ Space Efficiency, Fast Collection, and Mutator Performance}
 		font=\scriptsize,
 		block/.style={draw=themeText, very thick},
 		lineSep/.style={draw=themeText!40},
-		objbase/.style={minimum height=0.34cm, inner sep=0pt, font=\scriptsize},
+		objbase/.style={minimum height=0.3cm, inner sep=0pt, font=\scriptsize},
 		live/.style={objbase, fill=themeExample!60},
 		moved/.style={objbase, draw=themeText, fill=themeAccent!35},
-		gone/.style={objbase, draw=themeText!60, dashed, text=themeText!70},
+		gone/.style={objbase, draw=themeText!60, dashed, text=themeText!70, font=\tiny},
 		mv/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAccent, thick},
+		ref/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeText, thick},
 		oldref/.style={-{Stealth[length=2mm, width=1.6mm]}, draw=themeAlert, thick, dashed},
 		note/.style={font=\scriptsize, text=themeText!80},
-		rowlabel/.style={anchor=west, align=left, font=\footnotesize}
+		rowlabel/.style={anchor=west, align=left, font=\scriptsize}
 		]
-		\node[gone, minimum width=0.60cm, anchor=south west] (fa) at (3.95, 0.08) {fwd};
-		\node[gone, minimum width=0.60cm, anchor=south west] (fb) at (6.05, 0.08) {fwd};
-		\node[live, minimum width=0.60cm, anchor=south west] at (7.45, 0.08) {C};
-		\draw[lineSep] (3.90, 0) -- ++(0, 0.5);
-		\draw[lineSep] (4.60, 0) -- ++(0, 0.5);
-		\draw[lineSep] (5.30, 0) -- ++(0, 0.5);
-		\draw[lineSep] (6.00, 0) -- ++(0, 0.5);
-		\draw[lineSep] (6.70, 0) -- ++(0, 0.5);
-		\draw[lineSep] (7.40, 0) -- ++(0, 0.5);
-		\draw[lineSep] (8.10, 0) -- ++(0, 0.5);
-		\draw[block] (3.2, 0) rectangle ++(5.60, 0.5);
-		\node[live, minimum width=0.60cm, anchor=south west] (x) at (3.25, -1.17) {X};
-		\node[live, minimum width=0.60cm, anchor=south west] at (3.95, -1.17) {};
-		\node[live, minimum width=0.60cm, anchor=south west] at (4.65, -1.17) {};
-		\node[moved, minimum width=0.60cm, anchor=south west] (a) at (5.35, -1.17) {A};
-		\node[moved, minimum width=0.60cm, anchor=south west] (b) at (6.05, -1.17) {B};
-		\draw[lineSep] (3.90, -1.25) -- ++(0, 0.5);
-		\draw[lineSep] (4.60, -1.25) -- ++(0, 0.5);
-		\draw[lineSep] (5.30, -1.25) -- ++(0, 0.5);
-		\draw[lineSep] (6.00, -1.25) -- ++(0, 0.5);
-		\draw[lineSep] (6.70, -1.25) -- ++(0, 0.5);
-		\draw[lineSep] (7.40, -1.25) -- ++(0, 0.5);
-		\draw[lineSep] (8.10, -1.25) -- ++(0, 0.5);
-		\draw[block] (3.2, -1.25) rectangle ++(5.60, 0.5);
+		\node[live, minimum width=0.50cm, anchor=south west] (a0) at (4.95, 0.05) {A};
+		\node[live, minimum width=0.50cm, anchor=south west] at (6.75, 0.05) {B};
+		\node[live, minimum width=0.50cm, anchor=south west] (c0) at (7.95, 0.05) {C};
+		\draw[lineSep] (4.90, 0) -- ++(0, 0.42);
+		\draw[lineSep] (5.50, 0) -- ++(0, 0.42);
+		\draw[lineSep] (6.10, 0) -- ++(0, 0.42);
+		\draw[lineSep] (6.70, 0) -- ++(0, 0.42);
+		\draw[lineSep] (7.30, 0) -- ++(0, 0.42);
+		\draw[lineSep] (7.90, 0) -- ++(0, 0.42);
+		\draw[lineSep] (8.50, 0) -- ++(0, 0.42);
+		\draw[block] (4.30, 0) rectangle ++(4.80, 0.42);
+		\node[rowlabel] at (0, 0.21) {\textbf{Candidate}, before};
+		\node[note, anchor=west, text=themeText!80] at (9.25, 0.21) {A, B, C live};
+		\node[gone, minimum width=0.50cm, anchor=south west] (fa) at (4.95, -0.75) {fwd};
+		\node[gone, minimum width=0.50cm, anchor=south west] (fb) at (6.75, -0.75) {fwd};
+		\node[live, minimum width=0.50cm, anchor=south west] (c1) at (7.95, -0.75) {C};
+		\draw[lineSep] (4.90, -0.8) -- ++(0, 0.42);
+		\draw[lineSep] (5.50, -0.8) -- ++(0, 0.42);
+		\draw[lineSep] (6.10, -0.8) -- ++(0, 0.42);
+		\draw[lineSep] (6.70, -0.8) -- ++(0, 0.42);
+		\draw[lineSep] (7.30, -0.8) -- ++(0, 0.42);
+		\draw[lineSep] (7.90, -0.8) -- ++(0, 0.42);
+		\draw[lineSep] (8.50, -0.8) -- ++(0, 0.42);
+		\draw[block] (4.30, -0.8) rectangle ++(4.80, 0.42);
+		\node[rowlabel] at (0, -0.59) {\textbf{Candidate}, after marking};
+		\node[note, anchor=west, text=themeAlert, align=left] at (9.25, -0.59) {C pinned: stays\\still points to old A};
+		\node[live, minimum width=0.50cm, anchor=south west] at (4.35, -1.55) {};
+		\node[live, minimum width=0.50cm, anchor=south west] at (4.95, -1.55) {};
+		\node[live, minimum width=0.50cm, anchor=south west] at (5.55, -1.55) {};
+		\node[moved, minimum width=0.50cm, anchor=south west] (a) at (6.15, -1.55) {A};
+		\node[moved, minimum width=0.50cm, anchor=south west] (b) at (6.75, -1.55) {B};
+		\draw[lineSep] (4.90, -1.6) -- ++(0, 0.42);
+		\draw[lineSep] (5.50, -1.6) -- ++(0, 0.42);
+		\draw[lineSep] (6.10, -1.6) -- ++(0, 0.42);
+		\draw[lineSep] (6.70, -1.6) -- ++(0, 0.42);
+		\draw[lineSep] (7.30, -1.6) -- ++(0, 0.42);
+		\draw[lineSep] (7.90, -1.6) -- ++(0, 0.42);
+		\draw[lineSep] (8.50, -1.6) -- ++(0, 0.42);
+		\draw[block] (4.30, -1.6) rectangle ++(4.80, 0.42);
+		\node[rowlabel] at (0, -1.39) {\textbf{Target block}};
+		\node[note, anchor=west, text=themeText!80] at (9.25, -1.39) {A, B moved here};
+		\node[live, minimum width=0.50cm, anchor=south west] (c3) at (7.95, -2.35) {C};
+		\draw[lineSep] (4.90, -2.4) -- ++(0, 0.42);
+		\draw[lineSep] (5.50, -2.4) -- ++(0, 0.42);
+		\draw[lineSep] (6.10, -2.4) -- ++(0, 0.42);
+		\draw[lineSep] (6.70, -2.4) -- ++(0, 0.42);
+		\draw[lineSep] (7.30, -2.4) -- ++(0, 0.42);
+		\draw[lineSep] (7.90, -2.4) -- ++(0, 0.42);
+		\draw[lineSep] (8.50, -2.4) -- ++(0, 0.42);
+		\draw[block] (4.30, -2.4) rectangle ++(4.80, 0.42);
+		\node[rowlabel] at (0, -2.19) {\textbf{Candidate}, after sweep};
+		\node[note, anchor=west, align=left] at (9.25, -2.19) {\textcolor{themeExample}{\textbf{only C left}}\\C's pointer was fixed};
 		\draw[mv] (fa.south) -- (a.north);
 		\draw[mv] (fb.south) -- (b.north);
-		\draw[oldref] (x.north) to[out=90, in=180] (fa.west);
-		\node[note, anchor=east, text=themeAlert] at (3.15, -0.38) {X still points here};
-		\node[note, anchor=west, text=themeAlert] at (8.95, 0.25) {C pinned: stays};
-		\node[note, anchor=west] at (8.95, -1.0) {A, B moved here};
-		\node[rowlabel] at (0, 0.25) {\textbf{Candidate block}};
-		\node[rowlabel] at (0, -1.0) {\textbf{Target block}};
-		\node[live, minimum width=0.60cm, anchor=south west] at (7.45, -2.42) {C};
-		\draw[lineSep] (3.90, -2.5) -- ++(0, 0.5);
-		\draw[lineSep] (4.60, -2.5) -- ++(0, 0.5);
-		\draw[lineSep] (5.30, -2.5) -- ++(0, 0.5);
-		\draw[lineSep] (6.00, -2.5) -- ++(0, 0.5);
-		\draw[lineSep] (6.70, -2.5) -- ++(0, 0.5);
-		\draw[lineSep] (7.40, -2.5) -- ++(0, 0.5);
-		\draw[lineSep] (8.10, -2.5) -- ++(0, 0.5);
-		\draw[block] (3.2, -2.5) rectangle ++(5.60, 0.5);
-		\node[rowlabel] at (0, -2.25) {\textbf{After the sweep}};
-		\node[note, anchor=west, text=themeExample] at (8.95, -2.25) {\textbf{candidate: only C left}};
+		\draw[ref] (c0.north) to[out=135, in=45, looseness=0.45] (a0.north);
+		\draw[oldref] (c1.north) to[out=135, in=45, looseness=0.45] (fa.north);
+		\draw[ref] (c3.north) to[out=110, in=-60] (a.south);
 	\end{tikzpicture}
 \end{frame}
 
